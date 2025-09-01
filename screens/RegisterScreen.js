@@ -13,7 +13,7 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     if (!nombre || !apellido || !fechaNacimiento || !email || !password) {
-      alert("Por favor completa todos los campos ❌");
+      alert("Por favor completa todos los campos");
       return;
     }
 
@@ -32,10 +32,10 @@ export default function RegisterScreen() {
 
       const data = await response.json();
       console.log("Respuesta del servidor:", data);
-      alert(data.message || "Registro completado ✅");
+      alert(data.message || "Registro completado");
     } catch (error) {
       console.error("Error en el registro:", error);
-      alert("Hubo un error al registrarse ❌");
+      alert("Hubo un error al registrarse");
     }
   };
 
@@ -114,8 +114,8 @@ export default function RegisterScreen() {
 }
 
 const colors = {
-  primary: '#4a90e2',
-  background: '#f2f6fc',
+  primary: '#a17b4aff',
+  background: '#ece2dcff',
   inputBackground: '#fff',
   inputBorder: '#ccc',
   textPrimary: '#333',
@@ -159,4 +159,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
+
 });
