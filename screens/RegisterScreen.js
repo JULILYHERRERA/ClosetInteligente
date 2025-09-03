@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Platform } from 'react-native';
 import DateTimePicker from '@react-native-datetimepicker/datetimepicker';
-import { useNavigation } from '@react-navigation/native'; // 👈 importación
+import { useNavigation } from '@react-navigation/native'; // 👈 importación de las navegaciones asi nos ahorramos el "export default function RegisterScreen({ navigation }) {
+
 
 export default function RegisterScreen() {
   const [nombre, setNombre] = useState('');

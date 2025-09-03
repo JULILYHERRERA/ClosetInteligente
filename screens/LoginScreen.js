@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
 
-export default function RegisterScreen() {
+export default function LoginScreen({ navigation }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -29,6 +29,7 @@ export default function RegisterScreen() {
         alert("Inicio de sesión exitoso");
         // ejemplo: navegar a pantalla principal después de login
         navigation.navigate("Home"); 
+        return;
       } else {
         alert(data.message || "Credenciales incorrectas");
       }
@@ -38,6 +39,9 @@ export default function RegisterScreen() {
     }
   };    
 
+
+
+// TODA LA PARTE DE ESTILOS
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Iniciar Sesion</Text>
