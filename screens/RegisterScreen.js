@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Platform } from 'react-native';
 import DateTimePicker from '@react-native-datetimepicker/datetimepicker';
+import { useNavigation } from '@react-navigation/native'; // 👈 importación
 
 export default function RegisterScreen() {
   const [nombre, setNombre] = useState('');
@@ -8,8 +9,9 @@ export default function RegisterScreen() {
   const [fechaNacimiento, setFechaNacimiento] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
   const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const navigation = useNavigation(); // 👈 hook de navegación
 
   const handleRegister = async () => {
     if (!nombre || !apellido || !fechaNacimiento || !email || !password) {
@@ -31,8 +33,15 @@ export default function RegisterScreen() {
       });
 
       const data = await response.json();
-      console.log("Respuesta del servidor:", data);
-      alert(data.message || "Registro completado");
+
+      if (!response.ok) {
+        alert(data.message || "Error en el registro");
+        return;
+      }
+
+      alert(data.message || "Registro completado ✅");
+      navigation.navigate("Login"); // 👈 redirige a Login
+
     } catch (error) {
       console.error("Error en el registro:", error);
       alert("Hubo un error al registrarse");
@@ -40,7 +49,7 @@ export default function RegisterScreen() {
   };
 
   const onChangeDate = (event, selectedDate) => {
-    setShowDatePicker(Platform.OS === 'ios'); // en iOS queda abierto
+    setShowDatePicker(Platform.OS === 'ios'); 
     if (selectedDate) {
       setFechaNacimiento(selectedDate.toISOString().split('T')[0]);
     }
@@ -83,7 +92,7 @@ export default function RegisterScreen() {
           mode="date"
           display={Platform.OS === "ios" ? "spinner" : "default"}
           onChange={onChangeDate}
-          maximumDate={new Date()} // evita fechas futuras
+          maximumDate={new Date()}
         />
       )}
 
@@ -159,5 +168,4 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
-
 });

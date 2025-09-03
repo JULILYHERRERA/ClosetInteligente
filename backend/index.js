@@ -15,7 +15,8 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-// Ruta de prueba para verificar conexión
+// -------------------------------------------------
+// 📌 Ruta de prueba para verificar conexión
 app.get("/", async (req, res) => {
   try {
     const result = await pool.query("SELECT NOW()");
@@ -58,6 +59,12 @@ app.post("/register", async (req, res) => {
       });
     }
 
+    // 🔎 Verificar si el email ya existe
+    const existe = await pool.query("SELECT 1 FROM usuarios WHERE email = $1", [email]);
+    if (existe.rows.length > 0) {
+      return res.status(400).json({ message: "El email ya está registrado ❌" });
+    }
+
     // 🔒 Hashear la contraseña
     const hashedPassword = await bcrypt.hash(contrasena, 10);
 
@@ -66,10 +73,14 @@ app.post("/register", async (req, res) => {
       [nombre, apellido, fecha_nacimiento, email, hashedPassword]
     );
 
-    res.json({ message: "Usuario registrado con éxito ✅", userId: result.rows[0].id });
+    return res.status(201).json({
+      message: "Usuario registrado con éxito ✅",
+      userId: result.rows[0].id,
+    });
+
   } catch (error) {
-    console.error("Error en /register:", error);
-    res.status(500).json({ message: "Error interno del servidor ❌" });
+    console.error("Error en /register:", error.stack);
+    return res.status(500).json({ message: "Error interno del servidor ❌" });
   }
 });
 
@@ -102,10 +113,11 @@ app.post("/login", async (req, res) => {
     // 3. Eliminar contraseña del objeto antes de devolver
     delete usuario.contrasena;
 
-    res.json({ message: "Inicio de sesión exitoso ✅", usuario });
+    return res.json({ message: "Inicio de sesión exitoso ✅", usuario });
+
   } catch (error) {
-    console.error("Error en /login:", error);
-    res.status(500).json({ message: "Error interno del servidor ❌" });
+    console.error("Error en /login:", error.stack);
+    return res.status(500).json({ message: "Error interno del servidor ❌" });
   }
 });
 
