@@ -33,6 +33,8 @@ export default function WelcomeScreen({ navigation }) {
   );
 }
 
+
+
 const styles = StyleSheet.create({
   background: {
     flex: 1,
@@ -40,32 +42,37 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)", // sombra oscura encima de la imagen
+    backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 20,
   },
   title: {
     fontSize: 40,
     color: "#fff",
     fontWeight: "bold",
     marginBottom: 10,
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 18,
     color: "#ddd",
     marginBottom: 30,
-    margin: 20,
-    padding: 30, 
+    textAlign: "center",
   },
   button: {
     backgroundColor: "#a17b4aff",
     paddingVertical: 12,
-    paddingHorizontal: 25,
     borderRadius: 25,
+    width: 200,
+    marginTop: 20,
+    alignItems: "center",
   },
   buttonText: {
     fontSize: 18,
     color: "#fff",
     fontWeight: "600",
+    textAlign: "center",
   },
 });
+
