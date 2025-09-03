@@ -3,9 +3,7 @@ const express = require("express");
 const { Pool } = require("pg");
 const cors = require("cors");
 require("dotenv").config();
-
 const bcrypt = require("bcrypt");
-
 
 const app = express();
 app.use(cors());
@@ -28,21 +26,16 @@ app.get("/", async (req, res) => {
   }
 });
 
-
 // -------------------------------------------------
-//ruta para que funcione lo de registrar 
-// Ruta para registrar un usuario
-
+// 📌 Ruta para registrar un usuario
 app.post("/register", async (req, res) => {
   try {
     const { nombre, apellido, fecha_nacimiento, email, contrasena } = req.body;
 
-    // 1. Validación de campos obligatorios
     if (!nombre || !apellido || !fecha_nacimiento || !email || !contrasena) {
       return res.status(400).json({ message: "Todos los campos son obligatorios" });
     }
 
-    // 2. Validación de fecha (YYYY-MM-DD)
     const regexFecha = /^\d{4}-\d{2}-\d{2}$/;
     if (!regexFecha.test(fecha_nacimiento)) {
       return res.status(400).json({ message: "La fecha debe tener el formato YYYY-MM-DD" });
@@ -53,13 +46,11 @@ app.post("/register", async (req, res) => {
       return res.status(400).json({ message: "Fecha inválida" });
     }
 
-    // 3. Validación de email
     const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!regexEmail.test(email)) {
       return res.status(400).json({ message: "El email no es válido" });
     }
 
-    // 4. Validación de contraseña (mínimo 8 caracteres, al menos 1 letra y 1 número)
     const regexPassword = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
     if (!regexPassword.test(contrasena)) {
       return res.status(400).json({
@@ -67,37 +58,60 @@ app.post("/register", async (req, res) => {
       });
     }
 
-    // 🔒 5. Encriptar la contraseña
+    // 🔒 Hashear la contraseña
     const hashedPassword = await bcrypt.hash(contrasena, 10);
 
-    // 6. Inserción segura con parámetros
     const result = await pool.query(
       "INSERT INTO usuarios (nombre, apellido, fecha_nacimiento, email, contrasena) VALUES ($1, $2, $3, $4, $5) RETURNING id",
       [nombre, apellido, fecha_nacimiento, email, hashedPassword]
     );
 
     res.json({ message: "Usuario registrado con éxito ✅", userId: result.rows[0].id });
-
   } catch (error) {
     console.error("Error en /register:", error);
     res.status(500).json({ message: "Error interno del servidor ❌" });
   }
 });
 
+// -------------------------------------------------
+// 📌 Ruta para login
+app.post("/login", async (req, res) => {
+  try {
+    const { email, contrasena } = req.body;
 
+    if (!email || !contrasena) {
+      return res.status(400).json({ message: "Email y contraseña son obligatorios" });
+    }
 
+    // 1. Buscar usuario por email
+    const result = await pool.query("SELECT * FROM usuarios WHERE email = $1", [email]);
 
+    if (result.rows.length === 0) {
+      return res.status(400).json({ message: "El email no está registrado" });
+    }
 
+    const usuario = result.rows[0];
 
+    // 2. Comparar la contraseña ingresada con la hash en BD
+    const esValida = await bcrypt.compare(contrasena, usuario.contrasena);
 
+    if (!esValida) {
+      return res.status(400).json({ message: "Contraseña incorrecta" });
+    }
 
+    // 3. Eliminar contraseña del objeto antes de devolver
+    delete usuario.contrasena;
 
+    res.json({ message: "Inicio de sesión exitoso ✅", usuario });
+  } catch (error) {
+    console.error("Error en /login:", error);
+    res.status(500).json({ message: "Error interno del servidor ❌" });
+  }
+});
 
-// Levantar servidor
+// -------------------------------------------------
+// 🚀 Levantar servidor
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
-
-
-

@@ -11,12 +11,23 @@ export default function WelcomeScreen({ navigation }) {
         <Text style={styles.title}>Bienvenido</Text>
         <Text style={styles.subtitle}>Organiza tu ropa, recibe recomendaciones de outfits y aprovecha tu closet al máximo.</Text>
 
+
+{/* Botón de registro */}
         <TouchableOpacity 
           style={styles.button} 
           onPress={() => navigation.navigate("Register")}
         >
           <Text style={styles.buttonText}>Registrarse</Text>
         </TouchableOpacity>
+
+{/* Botón de inicio de sesión */}
+        <TouchableOpacity 
+          style={[styles.button, styles.loginButton]} 
+          onPress={() => navigation.navigate("Login")}
+        >
+          <Text style={styles.buttonText}>Iniciar Sesion</Text>
+        </TouchableOpacity>
+
       </View>
     </ImageBackground>
   );
