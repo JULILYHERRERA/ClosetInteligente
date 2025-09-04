@@ -12,7 +12,8 @@ export default function WelcomeScreen({ navigation }) {
         <Text style={styles.subtitle}>Organiza tu ropa, recibe recomendaciones de outfits y aprovecha tu closet al máximo.</Text>
 
 
-{/* Botón de registro */}
+
+{/* BOTON REGISTRO */}
         <TouchableOpacity 
           style={styles.button} 
           onPress={() => navigation.navigate("Register")}
@@ -20,7 +21,7 @@ export default function WelcomeScreen({ navigation }) {
           <Text style={styles.buttonText}>Registrarse</Text>
         </TouchableOpacity>
 
-{/* Botón de inicio de sesión */}
+{/* BOTON DE INICIO DE SESION */}
         <TouchableOpacity 
           style={[styles.button, styles.loginButton]} 
           onPress={() => navigation.navigate("Login")}
@@ -33,7 +34,7 @@ export default function WelcomeScreen({ navigation }) {
   );
 }
 
-
+// ESTILOS
 
 const styles = StyleSheet.create({
   background: {

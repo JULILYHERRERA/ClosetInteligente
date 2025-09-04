@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Platform } from 'react-native';
 import DateTimePicker from '@react-native-datetimepicker/datetimepicker';
-import { useNavigation } from '@react-navigation/native'; // 👈 importación de las navegaciones asi nos ahorramos el "export default function RegisterScreen({ navigation }) {
+import { useNavigation } from '@react-navigation/native'; //  importacion de las navegaciones asi nos ahorramos el "export default function RegisterScreen({ navigation }) {
 
 
 export default function RegisterScreen() {
@@ -12,7 +12,7 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const navigation = useNavigation(); // 👈 hook de navegación
+  const navigation = useNavigation(); 
 
   const handleRegister = async () => {
   if (!nombre || !apellido || !fechaNacimiento || !email || !password) {
@@ -35,15 +35,18 @@ export default function RegisterScreen() {
 
     const data = await response.json();
 
+//VERIFICACIONES DEL REGISTRO
+
     if (!response.ok) {
       alert(data.message || "Error en el registro");
       return;
     }
 
     alert(data.message || "Registro completado ✅");
-    // Usa los datos retornados por el backend
-    navigation.navigate('Preferencias', { userId: data.userId});
+    navigation.navigate('Preferencias', { userId: data.userId});// USAMOS LOS DATOS RETORNADOS POR EL BACKEND
 
+
+// MANEJO DE ERRORES
   } catch (error) {
     console.error("Error en el registro:", error);
     alert("Hubo un error al registrarse");
@@ -56,6 +59,9 @@ export default function RegisterScreen() {
       setFechaNacimiento(selectedDate.toISOString().split('T')[0]);
     }
   };
+
+
+// TODO LO VISUAL
 
   return (
     <View style={styles.container}>

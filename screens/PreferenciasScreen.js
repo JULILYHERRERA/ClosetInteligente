@@ -1,8 +1,7 @@
-// screens/HomeScreen.js
 import React, { useState } from "react";
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 
-// Opciones
+// OPCIONES
 const opciones = {
   colores: {
     Negro: 1, Blanco: 2, Gris: 3, Rojo: 4, Azul: 5, Verde: 6,
@@ -21,9 +20,11 @@ const opciones = {
   },
 };
 
+
 export default function HomeScreen({ route, navigation }) {
   const { userId } = route.params || {}; 
 
+//CATEGORIAS  
   const [preferencias, setPreferencias] = useState({
     colores: [],
     estilos: [],
@@ -31,9 +32,10 @@ export default function HomeScreen({ route, navigation }) {
     prendas: [],
   });
 
-  const [paso, setPaso] = useState(0); // índice del paso actual
-  const categorias = Object.keys(opciones); // ["colores", "estilos", "ocasiones", "prendas"]
+  const [paso, setPaso] = useState(0); // indice del paso actual
+  const categorias = Object.keys(opciones); //  ["colores", "estilos", "ocasiones", "prendas"]
 
+//SELECIÓN Y DESELECCIÓN
   const toggleSeleccion = (categoria, opcion) => {
     setPreferencias((prev) => {
       const seleccion = prev[categoria].includes(opcion)
@@ -60,6 +62,7 @@ export default function HomeScreen({ route, navigation }) {
       ))}
     </View>
   );
+
 
   const guardarPreferencias = async () => {
     try {
@@ -122,6 +125,7 @@ export default function HomeScreen({ route, navigation }) {
   );
 }
 
+//ESTILOS
 const colors = {
   primary: "#a17b4aff",
   background: "#ece2dcff",

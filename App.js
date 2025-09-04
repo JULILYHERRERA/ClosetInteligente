@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 
-// Importaciones 
+// IMPORTACIONES 
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -14,7 +14,7 @@ import PreferenciasScreen from './screens/PreferenciasScreen';
 import InicioScreen from './screens/InicioScreen';
 
 
-// Crear el stack
+// CREAR EL STACK
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -46,6 +46,8 @@ export default function App() {
     </NavigationContainer>
   );
 }
+
+//ESTILO
 
 const styles = StyleSheet.create({
   container: {

@@ -25,20 +25,24 @@ export default function LoginScreen({ navigation }) {
       const data = await response.json();
       console.log("Respuesta del servidor:", data);
 
+
+// VERIFICANCIONES DEL LOGIN     
       if (response.ok) {
         alert("Inicio de sesión exitoso");
-        // ejemplo: navegar a pantalla principal después de login
+        //NAVEGAR AL INICIO LUEGO DE UN LOGIN EXITOSO
         navigation.navigate("Inicio", { nombre: data.usuario.nombre }); 
         return;
+
       } else {
         alert(data.message || "Credenciales incorrectas");
       }
+
+//MANEJO  DE ERRORES      
     } catch (error) {
       console.error("Error en el login:", error);
       alert("Hubo un error al iniciar sesión");
     }
   };    
-
 
 
 // TODA LA PARTE DE ESTILOS

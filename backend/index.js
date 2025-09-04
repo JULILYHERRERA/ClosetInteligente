@@ -8,14 +8,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Conexión a Neon usando DATABASE_URL de .env
+// CONEXION A NEON USANDO DATABASE_URL DE .ENV
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
 
 // -------------------------------------------------
-// 📌 Ruta de prueba para verificar conexión
+// RUTA DE VERIFICACION DE LA BD
 app.get("/", async (req, res) => {
   try {
     const result = await pool.query("SELECT NOW()");
@@ -27,7 +27,7 @@ app.get("/", async (req, res) => {
 });
 
 // -------------------------------------------------
-// 📌 Ruta para registrar un usuario
+//  RUTA PARA EL REGISTRO
 app.post("/register", async (req, res) => {
   try {
     const { nombre, apellido, fecha_nacimiento, email, contrasena } = req.body;
@@ -58,13 +58,13 @@ app.post("/register", async (req, res) => {
       });
     }
 
-    // 🔎 Verificar si el email ya existe
+    //  Verificar si el email ya existe
     const existe = await pool.query("SELECT 1 FROM usuarios WHERE email = $1", [email]);
     if (existe.rows.length > 0) {
       return res.status(400).json({ message: "El email ya está registrado ❌" });
     }
 
-    // 🔒 Hashear la contraseña
+    // Hashear la contraseña
     const hashedPassword = await bcrypt.hash(contrasena, 10);
 
     const result = await pool.query(
@@ -84,7 +84,7 @@ app.post("/register", async (req, res) => {
 });
 
 // -------------------------------------------------
-// 📌 Ruta para login
+// RUTA DEL LOGIN
 app.post("/login", async (req, res) => {
   try {
     const { email, contrasena } = req.body;
@@ -121,9 +121,9 @@ app.post("/login", async (req, res) => {
 });
 
 // -------------------------------------------------
-// 📌 Ruta para guardar preferencias
+//  RUTA PARA PREFERENCIAS 
 app.post("/preferencias", async (req, res) => {
-  console.log("Body recibido:", req.body);
+  console.log("Body recibido:", req.body); 
   const client = await pool.connect();
   try {
     // Cambiar aquí para tomar userId en vez de usuario_id
@@ -194,7 +194,7 @@ app.post("/preferencias", async (req, res) => {
 
 
 // -------------------------------------------------
-// 🚀 Levantar servidor
+// LEVANTAR EL SERVIDOR 
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
