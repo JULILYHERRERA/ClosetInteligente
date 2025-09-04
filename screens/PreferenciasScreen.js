@@ -71,7 +71,7 @@ export default function HomeScreen({ route, navigation }) {
         prendas: preferencias.prendas.map((p) => opciones.prendas[p]),
       };
 
-      const response = await fetch("http://192.168.20.21:3000/preferencias", {
+      const response = await fetch("http://10.33.28.44:3000/preferencias", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -81,7 +81,7 @@ export default function HomeScreen({ route, navigation }) {
       const data = await response.json();
       console.log("Preferencias guardadas:", data);
 
-      navigation.replace("Inicio", { nombre: "Usuario" });
+      navigation.replace("Login");
     } catch (error) {
       Alert.alert("⚠️ Ocurrió un error: " + error.message);
     }

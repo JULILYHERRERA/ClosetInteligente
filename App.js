@@ -2,11 +2,11 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 
-// Importaciones de React Navigation
+// Importaciones 
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-// Tus pantallas
+// SCREENS
 import RegisterScreen from './screens/RegisterScreen';
 import WelcomeScreen from './screens/WelcomeScreen';  
 import LoginScreen from './screens/LoginScreen';  
