@@ -124,15 +124,17 @@ app.post("/login", async (req, res) => {
 // -------------------------------------------------
 // 📌 Ruta para guardar preferencias
 app.post("/preferencias", async (req, res) => {
+  console.log("Body recibido:", req.body);
   const client = await pool.connect();
   try {
+    // Cambiar aquí para tomar userId en vez de usuario_id
     const { userId, colores, estilos, ocasiones, prendas } = req.body;
-
-    if (!userId) {
+    const usuario_id = userId; // asignar para mantener el resto del código igual
+    if (!usuario_id) {
       return res.status(400).json({ message: "Falta el ID de usuario" });
     }
 
-    const usuarioExiste = await client.query("SELECT 1 FROM usuarios WHERE id = $1", [userId]);
+    const usuarioExiste = await client.query("SELECT 1 FROM usuarios WHERE id = $1", [usuario_id]);
     if (usuarioExiste.rows.length === 0) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
@@ -143,8 +145,8 @@ app.post("/preferencias", async (req, res) => {
     if (colores?.length) {
       for (const id of colores) {
         await client.query(
-          "INSERT INTO usuario_colores (usuario_id, color_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-          [userId, id]
+          "INSERT INTO usuario_colores (id_usuario, id_color) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+          [usuario_id, id]
         );
       }
     }
@@ -153,8 +155,8 @@ app.post("/preferencias", async (req, res) => {
     if (estilos?.length) {
       for (const id of estilos) {
         await client.query(
-          "INSERT INTO usuario_estilos (usuario_id, estilo_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-          [userId, id]
+          "INSERT INTO usuario_estilos (id_usuario, id_estilo) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+          [usuario_id, id]
         );
       }
     }
@@ -163,8 +165,8 @@ app.post("/preferencias", async (req, res) => {
     if (ocasiones?.length) {
       for (const id of ocasiones) {
         await client.query(
-          "INSERT INTO usuario_ocasiones (usuario_id, ocasion_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-          [userId, id]
+          "INSERT INTO usuario_ocasiones (id_usuario, id_ocasiones) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+          [usuario_id, id]
         );
       }
     }
@@ -173,8 +175,8 @@ app.post("/preferencias", async (req, res) => {
     if (prendas?.length) {
       for (const id of prendas) {
         await client.query(
-          "INSERT INTO usuario_prendas (usuario_id, prenda_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-          [userId, id]
+          "INSERT INTO usuario_prendas (id_usuario, id_prenda) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+          [usuario_id, id]
         );
       }
     }
@@ -190,9 +192,15 @@ app.post("/preferencias", async (req, res) => {
   }
 });
 
+
+
 // -------------------------------------------------
 // 🚀 Levantar servidor
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
+
+
+
+
