@@ -8,7 +8,7 @@ export default function WelcomeScreen({ navigation }) {
       style={styles.background}
     >
       <View style={styles.overlay}>
-        <Text style={styles.title}>Bienvenido</Text>
+        <Text style={styles.title}>¡Bienvenido a LookMate!</Text>
         <Text style={styles.subtitle}>Organiza tu ropa, recibe recomendaciones de outfits y aprovecha tu closet al máximo.</Text>
 
 
