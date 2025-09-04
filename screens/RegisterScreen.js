@@ -15,39 +15,40 @@ export default function RegisterScreen() {
   const navigation = useNavigation(); // 👈 hook de navegación
 
   const handleRegister = async () => {
-    if (!nombre || !apellido || !fechaNacimiento || !email || !password) {
-      alert("Por favor completa todos los campos");
+  if (!nombre || !apellido || !fechaNacimiento || !email || !password) {
+    alert("Por favor completa todos los campos");
+    return;
+  }
+
+  try {
+    const response = await fetch("http://192.168.1.86:3000/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nombre,
+        apellido,
+        fecha_nacimiento: fechaNacimiento,
+        email,
+        contrasena: password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message || "Error en el registro");
       return;
     }
 
-    try {
-      const response = await fetch("http://192.168.78.207:3000/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nombre,
-          apellido,
-          fecha_nacimiento: fechaNacimiento,
-          email,
-          contrasena: password,
-        }),
-      });
+    alert(data.message || "Registro completado ✅");
+    // Usa los datos retornados por el backend
+    navigation.navigate('Preferencias', { userId: data.userId});
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.message || "Error en el registro");
-        return;
-      }
-
-      alert(data.message || "Registro completado ✅");
-      navigation.navigate("Login"); // 👈 redirige a Login
-
-    } catch (error) {
-      console.error("Error en el registro:", error);
-      alert("Hubo un error al registrarse");
-    }
-  };
+  } catch (error) {
+    console.error("Error en el registro:", error);
+    alert("Hubo un error al registrarse");
+  }
+};
 
   const onChangeDate = (event, selectedDate) => {
     setShowDatePicker(Platform.OS === 'ios'); 

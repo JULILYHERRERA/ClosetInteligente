@@ -122,6 +122,75 @@ app.post("/login", async (req, res) => {
 });
 
 // -------------------------------------------------
+// 📌 Ruta para guardar preferencias
+app.post("/preferencias", async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { userId, colores, estilos, ocasiones, prendas } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ message: "Falta el ID de usuario" });
+    }
+
+    const usuarioExiste = await client.query("SELECT 1 FROM usuarios WHERE id = $1", [userId]);
+    if (usuarioExiste.rows.length === 0) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    await client.query("BEGIN");
+
+    // Guardar colores
+    if (colores?.length) {
+      for (const id of colores) {
+        await client.query(
+          "INSERT INTO usuario_colores (usuario_id, color_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+          [userId, id]
+        );
+      }
+    }
+
+    // Guardar estilos
+    if (estilos?.length) {
+      for (const id of estilos) {
+        await client.query(
+          "INSERT INTO usuario_estilos (usuario_id, estilo_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+          [userId, id]
+        );
+      }
+    }
+
+    // Guardar ocasiones
+    if (ocasiones?.length) {
+      for (const id of ocasiones) {
+        await client.query(
+          "INSERT INTO usuario_ocasiones (usuario_id, ocasion_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+          [userId, id]
+        );
+      }
+    }
+
+    // Guardar prendas
+    if (prendas?.length) {
+      for (const id of prendas) {
+        await client.query(
+          "INSERT INTO usuario_prendas (usuario_id, prenda_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+          [userId, id]
+        );
+      }
+    }
+
+    await client.query("COMMIT");
+    return res.json({ message: "Preferencias guardadas con éxito ✅" });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Error en /preferencias:", error.stack);
+    return res.status(500).json({ message: "Error interno del servidor ❌", detalle: error.message });
+  } finally {
+    client.release();
+  }
+});
+
+// -------------------------------------------------
 // 🚀 Levantar servidor
 const PORT = 3000;
 app.listen(PORT, () => {

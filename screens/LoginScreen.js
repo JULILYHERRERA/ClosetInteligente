@@ -12,7 +12,7 @@ export default function LoginScreen({ navigation }) {
     }
 
     try {
-      const response = await fetch("http://192.168.78.207:3000/login", {
+      const response = await fetch("http://192.168.1.86:3000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -28,7 +28,7 @@ export default function LoginScreen({ navigation }) {
       if (response.ok) {
         alert("Inicio de sesión exitoso");
         // ejemplo: navegar a pantalla principal después de login
-        navigation.navigate("Home"); 
+        navigation.navigate("Inicio", { nombre: data.usuario.nombre }); 
         return;
       } else {
         alert(data.message || "Credenciales incorrectas");
