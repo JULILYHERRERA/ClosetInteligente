@@ -12,7 +12,7 @@ export default function LoginScreen({ navigation }) {
     }
 
     try {
-      const response = await fetch("http://10.33.28.232:3000/login", {
+      const response = await fetch("http://192.168.1.86:3000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -30,7 +30,7 @@ export default function LoginScreen({ navigation }) {
       if (response.ok) {
         alert("Inicio de sesión exitoso");
         //NAVEGAR AL INICIO LUEGO DE UN LOGIN EXITOSO
-        navigation.navigate("Inicio", { nombre: data.usuario.nombre }); 
+        navigation.navigate("Inicio", { nombre: data.usuario.nombre, usuarioId: data.usuario.id }); 
         return;
 
       } else {

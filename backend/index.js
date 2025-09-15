@@ -3,6 +3,7 @@ const { Pool } = require("pg");
 const cors = require("cors");
 require("dotenv").config();
 const bcrypt = require("bcrypt");
+const multer = require("multer");
 
 const app = express();
 app.use(cors());
@@ -187,6 +188,37 @@ app.post("/preferencias", async (req, res) => {
     return res.status(500).json({ message: "Error interno del servidor ❌", detalle: error.message });
   } finally {
     client.release();
+  }
+});
+
+
+// Configuración multer (sube imagen a memoria como buffer)
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// -------------------------------------------------
+// Ruta para agregar prenda con foto
+app.post("/prendas", upload.single("imagen"), async (req, res) => {
+  try {
+    const { usuarioId, id_prenda } = req.body;
+    console.log("🟢 Datos recibidos:");
+    console.log("id_usuario:", usuarioId);
+    console.log("id_prenda:", id_prenda);
+    console.log("file:", req.file ? req.file.originalname : "No hay archivo");
+
+    if (!req.file) {
+      return res.status(400).json({ message: "Debes subir una imagen" });
+    }
+
+    await pool.query(
+      "INSERT INTO imagenes (id_usuario, id_prenda, imagen) VALUES ($1, $2, $3)",
+      [usuarioId, id_prenda, req.file.buffer] // guardamos binario en DB
+    );
+
+    res.json({ message: "Prenda guardada correctamente" });
+  } catch (error) {
+    console.error("Error en /prendas:", error.stack);
+    res.status(500).json({ message: "Error interno del servidor" });
   }
 });
 
