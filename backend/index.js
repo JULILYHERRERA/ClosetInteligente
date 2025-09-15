@@ -126,7 +126,6 @@ app.post("/preferencias", async (req, res) => {
   console.log("Body recibido:", req.body); 
   const client = await pool.connect();
   try {
-    // Cambiar aquí para tomar userId en vez de usuario_id
     const { userId, colores, estilos, ocasiones, prendas } = req.body;
     const usuario_id = userId; // asignar para mantener el resto del código igual
     if (!usuario_id) {

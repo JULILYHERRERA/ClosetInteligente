@@ -28,7 +28,7 @@ export default function HomeScreen({ route, navigation }) {
   const [preferencias, setPreferencias] = useState({
     colores: [],
     estilos: [],
-    ocasiones: [],
+    ocasiones: [],  
     prendas: [],
   });
 

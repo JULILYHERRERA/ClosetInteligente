@@ -12,7 +12,7 @@ export default function LoginScreen({ navigation }) {
     }
 
     try {
-      const response = await fetch("http://10.33.28.44:3000/login", {
+      const response = await fetch("http://10.33.28.232:3000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
