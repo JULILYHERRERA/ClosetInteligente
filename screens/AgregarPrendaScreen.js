@@ -40,7 +40,7 @@ export default function AgregarPrendaScreen({ route }) {
     }
 
     const formData = new FormData();
-    formData.append("id_usuario", usuarioId);
+    formData.append("usuarioId", usuarioId);
     formData.append("id_prenda", selectedPrenda);
     formData.append("imagen", {
       uri: image,
@@ -49,12 +49,9 @@ export default function AgregarPrendaScreen({ route }) {
     });
 
     try {
-      const response = await fetch("http://192.168.1.86:3000/prendas", {
+      const response = await fetch("http://192.168.20.21:3000/prendas", {
         method: "POST",
-        body: formData,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        body: formData
       });
 
       const data = await response.json();
