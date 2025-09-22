@@ -13,6 +13,8 @@ import LoginScreen from './screens/LoginScreen';
 import PreferenciasScreen from './screens/PreferenciasScreen';
 import InicioScreen from './screens/InicioScreen';
 import AgregarPrendaScreen from './screens/AgregarPrendaScreen';
+import MisPrendasScreen from "./screens/MisPrendasScreen";
+
 
 
 // CREAR EL STACK
@@ -47,6 +49,11 @@ export default function App() {
           name="AgregarPrenda" 
           component={AgregarPrendaScreen}
         />
+        <Stack.Screen 
+        name="MisPrendas" 
+        component={MisPrendasScreen} 
+        />
+        
       </Stack.Navigator>
     </NavigationContainer>
   );

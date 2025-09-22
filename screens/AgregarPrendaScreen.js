@@ -9,13 +9,12 @@ const prendas = {
   "Chaquetas": 9, "Shorts": 10, "Ropa deportiva": 11,
 };
 
-export default function AgregarPrendaScreen({ route }) {
-  const { usuarioId } = route.params; // lo recibimos de la navegación
+export default function AgregarPrendaScreen({ route, navigation }) { // ← añade navigation
+  const { usuarioId } = route.params;
 
   const [image, setImage] = useState(null);
   const [selectedPrenda, setSelectedPrenda] = useState(null);
 
-  // Abrir cámara
   const tomarFoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
@@ -32,7 +31,6 @@ export default function AgregarPrendaScreen({ route }) {
     }
   };
 
-  // Guardar prenda en backend
   const guardarPrenda = async () => {
     if (!image || !selectedPrenda) {
       Alert.alert("Debes tomar una foto y elegir la categoría");
@@ -42,23 +40,15 @@ export default function AgregarPrendaScreen({ route }) {
     const formData = new FormData();
     formData.append("usuarioId", usuarioId);
     formData.append("id_prenda", selectedPrenda);
-    formData.append("imagen", {
-      uri: image,
-      name: "prenda.jpg",
-      type: "image/jpeg",
-    });
+    formData.append("imagen", { uri: image, name: "prenda.jpg", type: "image/jpeg" });
 
     try {
-      const response = await fetch("http://192.168.20.21:3000/prendas", {
+      const response = await fetch("http://192.168.78.207:3000/prendas", {
         method: "POST",
         body: formData
       });
-
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Error al guardar la prenda");
-      }
+      if (!response.ok) throw new Error(data.message || "Error al guardar la prenda");
 
       Alert.alert("Prenda guardada correctamente");
       setImage(null);
@@ -93,6 +83,16 @@ export default function AgregarPrendaScreen({ route }) {
 
       <TouchableOpacity style={styles.button} onPress={guardarPrenda}>
         <Text style={styles.buttonText}>Guardar Prenda</Text>
+      </TouchableOpacity>
+
+      {/* NUEVO: botón para ver las prendas  */}
+      <TouchableOpacity
+        style={[styles.button, styles.secondaryButton]}
+        onPress={() => navigation.navigate("MisPrendas", { usuarioId })}
+      >
+        <Text style={[styles.buttonText, styles.secondaryButtonText]}>
+          Ver mis prendas
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -133,6 +133,15 @@ const styles = StyleSheet.create({
     color: colors.buttonText,
     fontSize: 16,
     fontWeight: "bold",
+  },
+  // Estilo del boton de VER PRENDAS
+  secondaryButton: {
+    backgroundColor: "transparent",
+    borderWidth: 2,
+    borderColor: colors.primary,
+  },
+  secondaryButtonText: {
+    color: colors.primary,
   },
   preview: {
     width: "100%",

@@ -223,6 +223,62 @@ app.post("/prendas", upload.single("imagen"), async (req, res) => {
 });
 
 
+// -------------------------------------------------
+// LISTAR PRENDAS DE UN USUARIO
+app.get("/prendas", async (req, res) => {
+  try {
+    const { usuarioId } = req.query;
+    if (!usuarioId) {
+      return res.status(400).json({ message: "Falta usuarioId" });
+    }
+
+    const r = await pool.query(
+      "SELECT id, id_prenda FROM imagenes WHERE id_usuario = $1 ORDER BY id DESC",
+      [usuarioId]
+    );
+
+    // Construimos la URL pública de la imagen para cada registro
+    const base = req.protocol + "://" + req.get("host");
+    const data = r.rows.map(row => ({
+      id: row.id,
+      id_prenda: row.id_prenda,
+      imagenUrl: `${base}/prendas/${row.id}/imagen`,
+    }));
+
+    res.json(data);
+  } catch (error) {
+    console.error("Error en GET /prendas:", error.stack);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+});
+
+// -------------------------------------------------
+// SERVIR LA IMAGEN (BINARIO) POR ID
+app.get("/prendas/:id/imagen", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const r = await pool.query(
+      "SELECT imagen FROM imagenes WHERE id = $1",
+      [id]
+    );
+
+    if (r.rows.length === 0) {
+      return res.status(404).send("Imagen no encontrada");
+    }
+
+  
+    res.set("Content-Type", "image/jpeg");
+    res.send(r.rows[0].imagen); // Buffer BYTEA
+  } catch (error) {
+    console.error("Error en GET /prendas/:id/imagen:", error.stack);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+});
+
+
+
+
 
 // -------------------------------------------------
 // LEVANTAR EL SERVIDOR 
