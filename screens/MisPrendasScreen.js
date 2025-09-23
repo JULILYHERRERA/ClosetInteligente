@@ -1,15 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  Image,
-  StyleSheet,
-  ActivityIndicator,
-  RefreshControl,
-  TouchableOpacity,
-  Platform
-} from "react-native";
+import {View,Text,FlatList,Image,StyleSheet,ActivityIndicator,RefreshControl,TouchableOpacity,Platform} from "react-native";
 
 //AJUSTE DE URL DE ANDROID O IOS
 const API_BASE =
@@ -18,7 +8,7 @@ const API_BASE =
     : "http://192.168.78.207:3000";
 
 
-// MAPA DE CATEGORÍAS
+//CATEGORÍAS
 const categorias = {
   Camisetas: 1, Camisas: 2, Jeans: 3, Pantalones: 4,
   Faldas: 5, Vestidos: 6, Sudaderas: 7, Blazers: 8,

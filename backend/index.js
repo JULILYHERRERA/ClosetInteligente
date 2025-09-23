@@ -85,6 +85,8 @@ app.post("/register", async (req, res) => {
 });
 
 // -------------------------------------------------
+
+
 // RUTA DEL LOGIN
 app.post("/login", async (req, res) => {
   try {
@@ -122,6 +124,8 @@ app.post("/login", async (req, res) => {
 });
 
 // -------------------------------------------------
+
+
 //  RUTA PARA PREFERENCIAS 
 app.post("/preferencias", async (req, res) => {
   console.log("Body recibido:", req.body); 
@@ -197,7 +201,9 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // -------------------------------------------------
-// Ruta para agregar prenda con foto
+
+//RUTA PARA AGREGAR PRENDA
+
 app.post("/prendas", upload.single("imagen"), async (req, res) => {
   try {
     const { usuarioId, id_prenda } = req.body;
