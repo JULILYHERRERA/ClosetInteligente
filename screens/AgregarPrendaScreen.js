@@ -9,12 +9,14 @@ const prendas = {
   "Chaquetas": 9, "Shorts": 10, "Ropa deportiva": 11,
 };
 
-export default function AgregarPrendaScreen({ route, navigation }) { // ← añade navigation
+export default function AgregarPrendaScreen({ route, navigation }) { 
   const { usuarioId } = route.params;
 
   const [image, setImage] = useState(null);
   const [selectedPrenda, setSelectedPrenda] = useState(null);
 
+
+//TOMAR FOTO  
   const tomarFoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
@@ -31,6 +33,7 @@ export default function AgregarPrendaScreen({ route, navigation }) { // ← aña
     }
   };
 
+  //GUARDAR PRENDA
   const guardarPrenda = async () => {
     if (!image || !selectedPrenda) {
       Alert.alert("Debes tomar una foto y elegir la categoría");
@@ -59,6 +62,8 @@ export default function AgregarPrendaScreen({ route, navigation }) { // ← aña
     }
   };
 
+
+ // VISTA 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Agregar Prenda</Text>
@@ -98,6 +103,7 @@ export default function AgregarPrendaScreen({ route, navigation }) { // ← aña
   );
 }
 
+//ESTILOS 
 const colors = {
   primary: "#a17b4aff",
   background: "#ece2dcff",

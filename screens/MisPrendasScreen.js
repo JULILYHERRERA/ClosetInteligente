@@ -1,4 +1,3 @@
-// screens/MisPrendasScreen.js
 import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
@@ -9,17 +8,17 @@ import {
   ActivityIndicator,
   RefreshControl,
   TouchableOpacity,
-  Platform,
-  SafeAreaView, // de react-native, suficiente para nuestro caso
+  Platform
 } from "react-native";
 
-// Ajusta esta URL según tu caso (emulador Android vs dispositivo físico/iOS)
+//AJUSTE DE URL DE ANDROID O IOS
 const API_BASE =
   Platform.OS === "android"
     ? "http://10.0.2.2:3000"
     : "http://192.168.78.207:3000";
 
-// Mapa de categorías → nombre por id
+
+// MAPA DE CATEGORÍAS
 const categorias = {
   Camisetas: 1, Camisas: 2, Jeans: 3, Pantalones: 4,
   Faldas: 5, Vestidos: 6, Sudaderas: 7, Blazers: 8,
@@ -29,6 +28,8 @@ const nombrePorId = Object.fromEntries(
   Object.entries(categorias).map(([nombre, id]) => [id, nombre])
 );
 
+
+//PANTALLA PRINCIPAL DE MIS PRENDAS
 export default function MisPrendasScreen({ route }) {
   const { usuarioId } = route.params || {};
   const [items, setItems] = useState([]);
@@ -36,6 +37,7 @@ export default function MisPrendasScreen({ route }) {
   const [refreshing, setRefreshing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
+//FUNCION PARA CARGAR PRENDAS 
   const fetchPrendas = useCallback(async () => {
     try {
       setErrorMsg("");
@@ -52,6 +54,7 @@ export default function MisPrendasScreen({ route }) {
     }
   }, [usuarioId]);
 
+//CARGA INICIAL DE PRENDAS
   useEffect(() => { fetchPrendas(); }, [fetchPrendas]);
 
   const onRefresh = () => {
@@ -70,6 +73,7 @@ export default function MisPrendasScreen({ route }) {
     );
   }
 
+// MENSAJES DE ERROR O DE LISTA VACIA
   if (errorMsg) {
     return (
       <SafeAreaView style={styles.root}>
@@ -83,6 +87,7 @@ export default function MisPrendasScreen({ route }) {
     );
   }
 
+//VISTA DE LISTA DE PRENDAS
   if (items.length === 0) {
     return (
       <SafeAreaView style={styles.root}>
@@ -100,8 +105,8 @@ export default function MisPrendasScreen({ route }) {
   return (
     <SafeAreaView style={styles.root}>
       <FlatList
-        style={styles.list}                     // ← pinta TODO el fondo detrás de la lista
-        contentContainerStyle={styles.listInner} // padding/espaciado
+        style={styles.list}                     
+        contentContainerStyle={styles.listInner} 
         data={items}
         keyExtractor={(it) => String(it.id)}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -121,6 +126,7 @@ export default function MisPrendasScreen({ route }) {
   );
 }
 
+//ESTILOS
 const colors = {
   primary: "#a17b4aff",
   background: "#ece2dcff",
