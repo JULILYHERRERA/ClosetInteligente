@@ -7,8 +7,8 @@ const SafeAreaViewCompat = require("react-native").SafeAreaView || View;
 // AJUSTE DE URL DE ANDROID O IOS
 const API_BASE =
   Platform.OS === "android"
-    ? "http://10.0.2.2:3000"
-    : "http://192.168.78.207:3000";
+    ? "http://192.168.20.21:3000"
+    : "http://192.168.20.21:3000";
 
 // CATEGORÍAS
 const categorias = {
