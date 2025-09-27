@@ -1,25 +1,25 @@
 import React, { useEffect, useState, useCallback } from "react";
-import {View,Text,FlatList,Image,StyleSheet,ActivityIndicator,RefreshControl,TouchableOpacity,Platform} from "react-native";
+import {View,Text,FlatList,Image,StyleSheet,ActivityIndicator,RefreshControl,TouchableOpacity,Platform,} from "react-native";
 
-//AJUSTE DE URL DE ANDROID O IOS
+// Alias seguro: usa SafeAreaView si está disponible; si no, cae a View (evita el crash)
+const SafeAreaViewCompat = require("react-native").SafeAreaView || View;
+
+// AJUSTE DE URL DE ANDROID O IOS
 const API_BASE =
   Platform.OS === "android"
     ? "http://10.0.2.2:3000"
     : "http://192.168.78.207:3000";
 
-
-//CATEGORÍAS
+// CATEGORÍAS
 const categorias = {
-  Camisetas: 1, Camisas: 2, Jeans: 3, Pantalones: 4,
-  Faldas: 5, Vestidos: 6, Sudaderas: 7, Blazers: 8,
-  Chaquetas: 9, Shorts: 10, "Ropa deportiva": 11,
+  Camisetas: 1,Camisas: 2,Jeans: 3,Pantalones: 4,Faldas: 5,Vestidos: 6,Sudaderas: 7,Blazers: 8,Chaquetas: 9,Shorts: 10,"Ropa deportiva": 11,
 };
+
 const nombrePorId = Object.fromEntries(
   Object.entries(categorias).map(([nombre, id]) => [id, nombre])
 );
 
-
-//PANTALLA PRINCIPAL DE MIS PRENDAS
+// PANTALLA PRINCIPAL DE MIS PRENDAS
 export default function MisPrendasScreen({ route }) {
   const { usuarioId } = route.params || {};
   const [items, setItems] = useState([]);
@@ -27,7 +27,7 @@ export default function MisPrendasScreen({ route }) {
   const [refreshing, setRefreshing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-//FUNCION PARA CARGAR PRENDAS 
+  // FUNCION PARA CARGAR PRENDAS
   const fetchPrendas = useCallback(async () => {
     try {
       setErrorMsg("");
@@ -44,8 +44,10 @@ export default function MisPrendasScreen({ route }) {
     }
   }, [usuarioId]);
 
-//CARGA INICIAL DE PRENDAS
-  useEffect(() => { fetchPrendas(); }, [fetchPrendas]);
+  // CARGA INICIAL DE PRENDAS
+  useEffect(() => {
+    fetchPrendas();
+  }, [fetchPrendas]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -54,57 +56,68 @@ export default function MisPrendasScreen({ route }) {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.root}>
+      <SafeAreaViewCompat style={styles.root}>
         <View style={styles.center}>
           <ActivityIndicator size="large" />
           <Text style={styles.muted}>Cargando prendas…</Text>
         </View>
-      </SafeAreaView>
+      </SafeAreaViewCompat>
     );
   }
 
-// MENSAJES DE ERROR O DE LISTA VACIA
+  // MENSAJES DE ERROR O DE LISTA VACIA
   if (errorMsg) {
     return (
-      <SafeAreaView style={styles.root}>
+      <SafeAreaViewCompat style={styles.root}>
         <View style={styles.center}>
           <Text style={styles.error}>Error: {errorMsg}</Text>
           <TouchableOpacity style={styles.button} onPress={fetchPrendas}>
             <Text style={styles.buttonText}>Reintentar</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </SafeAreaViewCompat>
     );
   }
 
-//VISTA DE LISTA DE PRENDAS
+  // VISTA DE LISTA DE PRENDAS
   if (items.length === 0) {
     return (
-      <SafeAreaView style={styles.root}>
+      <SafeAreaViewCompat style={styles.root}>
         <View style={styles.center}>
           <Text style={styles.title}>Aún no tienes prendas guardadas</Text>
           <Text style={styles.muted}>Agrega una desde “Agregar prenda”.</Text>
-          <TouchableOpacity style={[styles.button, { marginTop: 16 }]} onPress={fetchPrendas}>
+          <TouchableOpacity
+            style={[styles.button, { marginTop: 16 }]}
+            onPress={fetchPrendas}
+          >
             <Text style={styles.buttonText}>Actualizar</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </SafeAreaViewCompat>
     );
   }
 
   return (
-    <SafeAreaView style={styles.root}>
+    <SafeAreaViewCompat style={styles.root}>
       <FlatList
-        style={styles.list}                     
-        contentContainerStyle={styles.listInner} 
+        style={styles.list}
+        contentContainerStyle={styles.listInner}
         data={items}
-        keyExtractor={(it) => String(it.id)}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        keyExtractor={(it) =>
+          String(it.id ?? it.prenda_id ?? it.id_prenda ?? Math.random())
+        }
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         renderItem={({ item }) => {
-          const nombre = nombrePorId[item.id_prenda] || "Prenda";
+          // Fallbacks por si el backend usa otros nombres de campos
+          const categoriaId = item.id_prenda ?? item.categoria_id;
+          const nombre = nombrePorId[categoriaId] || "Prenda";
+          const uri = item.imagenUrl ?? item.imagen_url ?? item.url;
+
           return (
             <View style={styles.card}>
-              <Image source={{ uri: item.imagenUrl }} style={styles.img} />
+              {!!uri && <Image source={{ uri }} style={styles.img} />}
               <View style={styles.row}>
                 <Text style={styles.caption}>{nombre}</Text>
               </View>
@@ -112,11 +125,11 @@ export default function MisPrendasScreen({ route }) {
           );
         }}
       />
-    </SafeAreaView>
+    </SafeAreaViewCompat>
   );
 }
 
-//ESTILOS
+// ESTILOS
 const colors = {
   primary: "#a17b4aff",
   background: "#ece2dcff",
@@ -150,7 +163,13 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
   },
 
-  img: { width: "100%", height: 200, borderRadius: 12, marginBottom: 10, backgroundColor: "#eee" },
+  img: {
+    width: "100%",
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 10,
+    backgroundColor: "#eee",
+  },
   row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
 
   caption: { fontSize: 16, fontWeight: "600", color: colors.text },
@@ -158,6 +177,11 @@ const styles = StyleSheet.create({
   muted: { color: colors.muted, marginTop: 6, textAlign: "center" },
   error: { color: "#b00020", fontWeight: "600", textAlign: "center", marginBottom: 12 },
 
-  button: { backgroundColor: colors.primary, paddingVertical: 12, paddingHorizontal: 18, borderRadius: 10 },
+  button: {
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 10,
+  },
   buttonText: { color: colors.buttonText, fontWeight: "700" },
 });
