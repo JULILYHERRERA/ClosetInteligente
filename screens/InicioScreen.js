@@ -1,62 +1,247 @@
 // screens/InicioScreen.js
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
-  ScrollView,
   Image,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl,
+  Platform,
 } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons"; 
+import { MaterialIcons } from "@expo/vector-icons";
+import { styles, colors } from "./InicioScreen.styles";
+
+const SafeAreaViewCompat = require("react-native").SafeAreaView || View;
+
+// AJUSTE DE URL
+const API_BASE =
+  Platform.OS === "android"
+    ? "http://192.168.20.21:3000"
+    : "http://192.168.20.21:3000";
+
+// CATEGORÍAS
+const categorias = {
+  Camisetas: 1,
+  Camisas: 2,
+  Jeans: 3,
+  Pantalones: 4,
+  Faldas: 5,
+  Vestidos: 6,
+  Sudaderas: 7,
+  Blazers: 8,
+  Chaquetas: 9,
+  Shorts: 10,
+  "Ropa deportiva": 11,
+};
+
+const nombrePorId = Object.fromEntries(
+  Object.entries(categorias).map(([nombre, id]) => [id, nombre])
+);
+
+const categories = ["Todas", ...Object.keys(categorias)];
 
 export default function InicioScreen({ route, navigation }) {
   const { nombre, usuarioId } = route.params || {};
 
-  // Función para manejar navegación desde el bottom menu
+  const [selectedCategory, setSelectedCategory] = useState("Todas");
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
   const navigateTo = (screenName) => {
-    if (screenName === "AgregarPrenda") {
-      navigation.navigate("AgregarPrenda", { usuarioId });
-    } else if (screenName === "MisPrendas") {
-      navigation.navigate("MisPrendas", { usuarioId });
-    } else if (screenName === "Perfil") {
-      navigation.navigate("Perfil", { usuarioId }); 
-    } else if (screenName === "Configuracion") {
-      navigation.navigate("Configuracion", { usuarioId }); 
-    }
+    navigation.navigate(screenName, { usuarioId });
   };
 
-  // Placeholder URL para avatar: Muestra iniciales del nombre (rápido y predefinido)
-  const avatarUrl = nombre 
-    ? `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=${colors.primary.replace('#', '')}&color=fff&size=80&rounded=true&bold=true&font-size=0.4`
-    : 'https://ui-avatars.com/api/?name=Usuario&background=a17b4a&color=fff&size=80&rounded=true&bold=true&font-size=0.4';
+  const fetchPrendas = useCallback(async () => {
+    try {
+      setErrorMsg("");
+      const res = await fetch(`${API_BASE}/prendas?usuarioId=${usuarioId}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "No se pudo cargar prendas");
+      setItems(Array.isArray(data) ? data : []);
+    } catch (e) {
+      setErrorMsg(e.message || "Error al cargar prendas");
+      setItems([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [usuarioId]);
+
+  useEffect(() => {
+    fetchPrendas();
+  }, [fetchPrendas]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchPrendas();
+  };
+
+  const getCategoriaNombre = (item) => {
+    const categoriaId =
+      item.id_prenda ?? item.categoria_id ?? item.categoria ?? 0;
+    return nombrePorId[categoriaId] || "Desconocida";
+  };
+
+  const filteredPrendas =
+    selectedCategory === "Todas"
+      ? items
+      : items.filter(
+          (prenda) => getCategoriaNombre(prenda) === selectedCategory
+        );
+
+  const renderCategoryButton = ({ item }) => (
+    <TouchableOpacity
+      style={[
+        styles.categoryButton,
+        selectedCategory === item && styles.selectedCategoryButton,
+      ]}
+      onPress={() => setSelectedCategory(item)}
+      activeOpacity={0.8}
+    >
+      <Text
+        style={[
+          styles.categoryButtonText,
+          selectedCategory === item && styles.selectedCategoryButtonText,
+        ]}
+      >
+        {item}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  const renderPrenda = ({ item }) => {
+    const categoriaNombre = getCategoriaNombre(item);
+    const uri = item.imagenUrl ?? item.imagen_url ?? item.url ?? null;
+    const prendaNombre = item.nombre ?? categoriaNombre ?? "Prenda";
+
+    return (
+      <TouchableOpacity
+        style={styles.prendaItem}
+        onPress={() =>
+          navigation.navigate("DetallePrenda", { prenda: item, usuarioId })
+        }
+        activeOpacity={0.8}
+      >
+        {uri ? (
+          <Image source={{ uri }} style={styles.prendaImage} />
+        ) : (
+          <View
+            style={[
+              styles.prendaImage,
+              {
+                backgroundColor: colors.accent,
+                justifyContent: "center",
+                alignItems: "center",
+              },
+            ]}
+          >
+            <MaterialIcons
+              name="image-not-supported"
+              size={32}
+              color={colors.textSecondary}
+            />
+          </View>
+        )}
+    
+      </TouchableOpacity>
+    );
+  };
+
+  const keyExtractor = (item) =>
+    String(item.id ?? item.prenda_id ?? item.id_prenda ?? Math.random());
+
+  if (loading) {
+    return (
+      <SafeAreaViewCompat style={styles.safeArea}>
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={colors.background}
+        />
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.muted}>Cargando prendas…</Text>
+        </View>
+      </SafeAreaViewCompat>
+    );
+  }
+
+  if (errorMsg) {
+    return (
+      <SafeAreaViewCompat style={styles.safeArea}>
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={colors.background}
+        />
+        <View style={styles.center}>
+          <Text style={styles.error}>Error: {errorMsg}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchPrendas}>
+            <Text style={styles.buttonText}>Reintentar</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaViewCompat>
+    );
+  }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaViewCompat style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
       <View style={styles.container}>
-        {/* Contenido principal (ScrollView para si agregas más elementos) */}
-        <ScrollView style={styles.scrollContent} contentContainerStyle={styles.contentContainer}>
+        {/* Header con categorías */}
+        <View style={styles.header}>
+          <FlatList
+            data={categories}
+            renderItem={renderCategoryButton}
+            keyExtractor={(item) => item}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoryScrollContainer}
+          />
+        </View>
 
-          {/* Sección de bienvenida*/}
-          <View style={styles.welcomeSection}>
-            <Image
-              source={{ uri: avatarUrl }} // Avatar con iniciales del nombre 
-              style={styles.avatar}
-              defaultSource={{ uri: 'https://ui-avatars.com/api/?name=U&background=a17b4a&color=fff&size=80&rounded=true' }} // Fallback simple si no carga
+        {/* Grid de prendas */}
+        <FlatList
+          data={filteredPrendas}
+          renderItem={renderPrenda}
+          keyExtractor={keyExtractor}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          contentContainerStyle={styles.prendasGrid}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={() => (
+            <Text style={styles.sectionTitle}>Tus Prendas</Text>
+          )}
+          ListEmptyComponent={() => (
+            <View style={styles.emptyState}>
+              <MaterialIcons
+                name="folder-off"
+                size={48}
+                color={colors.textSecondary}
+              />
+              <Text style={styles.emptyText}>
+                Aún no tienes prendas guardadas
+              </Text>
+            </View>
+          )}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[colors.primary]}
             />
-            <Text style={styles.welcomeText}>¡Hola, {nombre || "Usuario"}!</Text>
-            <Text style={styles.subtitle}>Empecemos a combinar</Text>
-          </View>
-        </ScrollView>
+          }
+        />
 
-        {/* Menú inferior fijo */}
+        {/* Menú inferior */}
         <View style={styles.bottomMenu}>
           <TouchableOpacity
-            style={[styles.menuItem, styles.activeItem]} 
-            onPress={() => navigation.navigate("InicioScreen", { usuarioId })} 
+            style={[styles.menuItem, styles.activeItem]}
+            onPress={() => navigation.navigate("InicioScreen", { usuarioId })}
             activeOpacity={0.7}
           >
             <MaterialIcons name="home" size={24} color={colors.primary} />
@@ -86,148 +271,15 @@ export default function InicioScreen({ route, navigation }) {
             onPress={() => navigateTo("Perfil")}
             activeOpacity={0.7}
           >
-            <MaterialIcons name="person-outline" size={24} color={colors.textSecondary} />
+            <MaterialIcons
+              name="person-outline"
+              size={24}
+              color={colors.textSecondary}
+            />
             <Text style={styles.menuItemText}>Perfil</Text>
           </TouchableOpacity>
         </View>
       </View>
-    </SafeAreaView>
+    </SafeAreaViewCompat>
   );
 }
-
-const colors = {
-  primary: "#a17b4a",
-  primaryDark: "#8a5f3a",
-  background: "#ece2dc",
-  cardBackground: "#ffffff",
-  textPrimary: "#333333",
-  textSecondary: "#666666",
-  buttonText: "#ffffff",
-  accent: "#f4e4d9",
-  shadow: "#00000020",
-};
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    flex: 1,
-  },
-  contentContainer: {
-    padding: 20,
-    paddingBottom: 100, // Espacio para el bottom menu
-    alignItems: "center",
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 30,
-    paddingTop: 10,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: colors.textPrimary,
-  },
-  welcomeSection: {
-    alignItems: "center",
-    marginBottom: 40,
-    padding: 20,
-    backgroundColor: colors.cardBackground,
-    borderRadius: 16,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-    width: "100%",
-  },
-  avatar: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    marginBottom: 15,
-    borderWidth: 2,
-    borderColor: colors.primary,
-  },
-  welcomeText: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: colors.textPrimary,
-    textAlign: "center",
-    marginBottom: 5,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    textAlign: "center",
-  },
-  actionsSection: {
-    width: "100%",
-    alignItems: "center",
-  },
-  actionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.primary,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    marginBottom: 15,
-    width: "85%",
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  buttonIcon: {
-    marginRight: 12,
-  },
-  actionButtonText: {
-    color: colors.buttonText,
-    fontSize: 18,
-    fontWeight: "600",
-    flex: 1,
-  },
-  // Estilos para el bottom menu
-  bottomMenu: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    backgroundColor: colors.cardBackground,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderTopWidth: 1,
-    borderTopColor: colors.accent,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  menuItem: {
-    flex: 1,
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  activeItem: {
-    
-  },
-  menuItemText: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 4,
-    fontWeight: "500",
-  },
-  activeText: {
-    color: colors.primary,
-    fontWeight: "600",
-  },
-});
