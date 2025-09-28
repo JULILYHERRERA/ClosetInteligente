@@ -14,6 +14,7 @@ import PreferenciasScreen from './screens/PreferenciasScreen';
 import InicioScreen from './screens/InicioScreen';
 import AgregarPrendaScreen from './screens/AgregarPrendaScreen';
 import MisPrendasScreen from "./screens/MisPrendasScreen";
+import ChatIAScreen from "./screens/ChatIAScreen"
 
 
 
@@ -52,6 +53,10 @@ export default function App() {
         <Stack.Screen 
         name="MisPrendas" 
         component={MisPrendasScreen} 
+        />
+        <Stack.Screen 
+        name="ChatIA" 
+        component={ChatIAScreen} 
         />
         
       </Stack.Navigator>

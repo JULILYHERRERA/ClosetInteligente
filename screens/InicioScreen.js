@@ -268,7 +268,7 @@ export default function InicioScreen({ route, navigation }) {
 
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => navigateTo("Perfil")}
+            onPress={() => navigateTo("ChatIA")}
             activeOpacity={0.7}
           >
             <MaterialIcons
@@ -276,7 +276,7 @@ export default function InicioScreen({ route, navigation }) {
               size={24}
               color={colors.textSecondary}
             />
-            <Text style={styles.menuItemText}>Perfil</Text>
+            <Text style={styles.menuItemText}>Chat</Text>
           </TouchableOpacity>
         </View>
       </View>
