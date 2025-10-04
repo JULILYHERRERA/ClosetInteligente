@@ -46,7 +46,7 @@ export default function AgregarPrendaScreen({ route, navigation }) {
     formData.append("imagen", { uri: image, name: "prenda.jpg", type: "image/jpeg" });
 
     try {
-      const response = await fetch("http://192.168.20.21:3000/prendas", {
+      const response = await fetch("http://192.168.78.207:3000/prendas", {
         method: "POST",
         body: formData
       });

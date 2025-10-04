@@ -74,7 +74,7 @@ export default function HomeScreen({ route, navigation }) {
         prendas: preferencias.prendas.map((p) => opciones.prendas[p]),
       };
 
-      const response = await fetch("http:192.168.20.21:3000/preferencias", {
+      const response = await fetch("http:192.168.78.207:3000/preferencias", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
