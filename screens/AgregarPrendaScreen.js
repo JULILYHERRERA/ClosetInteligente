@@ -12,15 +12,15 @@ const prendas = {
   "Chaquetas": 9, "Shorts": 10, "Ropa deportiva": 11,
 };
 
-// === API KEY DE REMOVE.BG desde app.json (expo.extra) ===
+// API KEY DE REMOVE.BG desde app.json 
 const EXTRA = Constants.expoConfig?.extra || Constants.manifest?.extra || {};
-const REMOVE_BG_API_KEY = EXTRA.REMOVE_BG_API_KEY || "";
+const REMOVE_BG_API_KEY = EXTRA.REMOVE_BG_API_KEY || ""; 
 
 // AJUSTE DE URL DE ANDROID O IOS (para tu backend de guardar prendas)
 const API_BASE =
   Platform.OS === "android"
-    ? "http://10.0.2.2:3000"        // emulador Android
-    : "http://192.168.78.207:3000"; // tu IP LAN para iOS / Android físico
+    ? "http://10.0.2.2:3000"        //  Android
+    : "http://192.168.78.207:3000"; // IOS
 
 export default function AgregarPrendaScreen({ route, navigation }) { 
   const { usuarioId } = route.params;
@@ -29,7 +29,7 @@ export default function AgregarPrendaScreen({ route, navigation }) {
   const [selectedPrenda, setSelectedPrenda] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // helper: arrayBuffer -> base64
+  // helper: arrayBuffer -> base64 
   const arrayBufferToBase64 = (buffer) => {
     let binary = "";
     const bytes = new Uint8Array(buffer);
@@ -52,7 +52,7 @@ export default function AgregarPrendaScreen({ route, navigation }) {
 
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,   // <— importante: el recorte lo hará la API
+      allowsEditing: false,   // <— importante: el recorte lo hara API
       quality: 1,
     });
     if (result.canceled) return;
@@ -60,7 +60,7 @@ export default function AgregarPrendaScreen({ route, navigation }) {
     try {
       setLoading(true);
 
-      // === Llamar a remove.bg y obtener PNG con transparencia ===
+      // Llamar a remove.bg y obtener PNG con transparencia 
       const form = new FormData();
       form.append("image_file", {
         uri: result.assets[0].uri,
@@ -76,7 +76,7 @@ export default function AgregarPrendaScreen({ route, navigation }) {
         body: form,
       });
 
-      // remove.bg responde BINARIO (el PNG); leemos ArrayBuffer
+      // remove.bg responde BINARIO (el PNG) leemos ArrayBuffer
       const arrayBuf = await resp.arrayBuffer();
       if (!resp.ok) {
         const msg = resp.headers.get("x-error") || `HTTP ${resp.status}`;
@@ -110,7 +110,6 @@ export default function AgregarPrendaScreen({ route, navigation }) {
     }
 
     try {
-      // MULTIPART con el PNG local (igual que hacías, pero ahora image/png)
       const formData = new FormData();
       formData.append("usuarioId", usuarioId);
       formData.append("id_prenda", selectedPrenda);
