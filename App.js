@@ -15,7 +15,7 @@ import InicioScreen from './screens/InicioScreen';
 import AgregarPrendaScreen from './screens/AgregarPrendaScreen';
 import MisPrendasScreen from "./screens/MisPrendasScreen";
 import ChatIAScreen from "./screens/ChatIAScreen"
-
+import DetallePrendaScreen from "./screens/DetallePrendaScreen";
 
 
 // CREAR EL STACK
@@ -57,6 +57,10 @@ export default function App() {
         <Stack.Screen 
         name="ChatIA" 
         component={ChatIAScreen} 
+        />
+        <Stack.Screen 
+        name="DetallePrenda" 
+        component={DetallePrendaScreen} 
         />
         
       </Stack.Navigator>

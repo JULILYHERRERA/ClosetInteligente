@@ -207,7 +207,7 @@ app.post("/prendas", upload.single("imagen"), async (req, res) => {
   try {
     const { usuarioId, id_prenda } = req.body;
 
-    console.log("🟢 /prendas ->", {
+    console.log(" /prendas ->", {
       usuarioId, id_prenda,
       hasFile: !!req.file,
       mimetype: req.file?.mimetype,
@@ -263,6 +263,7 @@ app.get("/prendas", async (req, res) => {
     res.status(500).json({ message: "Error interno del servidor" });
   }
 });
+
 
 // -------------------------------------------------
 // SERVIR LA IMAGEN (BINARIO) POR ID
