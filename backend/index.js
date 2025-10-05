@@ -202,29 +202,36 @@ const upload = multer({ storage });
 
 // -------------------------------------------------
 
-//RUTA PARA AGREGAR PRENDA
-
+//RUTA PARA AGREGAR PRENDA (recibe multipart con campo "imagen")
 app.post("/prendas", upload.single("imagen"), async (req, res) => {
   try {
     const { usuarioId, id_prenda } = req.body;
-    console.log("🟢 Datos recibidos:");
-    console.log("id_usuario:", usuarioId);
-    console.log("id_prenda:", id_prenda);
-    console.log("file:", req.file ? req.file.originalname : "No hay archivo");
 
+    console.log("🟢 /prendas ->", {
+      usuarioId, id_prenda,
+      hasFile: !!req.file,
+      mimetype: req.file?.mimetype,
+      name: req.file?.originalname,
+      size: req.file?.buffer?.length
+    });
+
+    if (!usuarioId || !id_prenda) {
+      return res.status(400).json({ message: "Faltan usuarioId o id_prenda" });
+    }
     if (!req.file) {
-      return res.status(400).json({ message: "Debes subir una imagen" });
+      return res.status(400).json({ message: "Debes subir una imagen (campo 'imagen')" });
     }
 
+    // Inserta SOLO columnas existentes: id_usuario, id_prenda, imagen, mime
     await pool.query(
-      "INSERT INTO imagenes (id_usuario, id_prenda, imagen) VALUES ($1, $2, $3)",
-      [usuarioId, id_prenda, req.file.buffer] // guardamos binario en DB
+      "INSERT INTO imagenes (id_usuario, id_prenda, imagen, mime) VALUES ($1, $2, $3, $4)",
+      [usuarioId, id_prenda, req.file.buffer, req.file.mimetype || "image/png"]
     );
 
-    res.json({ message: "Prenda guardada correctamente" });
+    return res.json({ message: "Prenda guardada correctamente" });
   } catch (error) {
-    console.error("Error en /prendas:", error.stack);
-    res.status(500).json({ message: "Error interno del servidor" });
+    console.error("❌ Error en POST /prendas:", error.stack || error);
+    return res.status(500).json({ message: "Error interno del servidor" });
   }
 });
 
@@ -238,22 +245,21 @@ app.get("/prendas", async (req, res) => {
       return res.status(400).json({ message: "Falta usuarioId" });
     }
 
+    const base = req.protocol + "://" + req.get("host");
     const r = await pool.query(
       "SELECT id, id_prenda FROM imagenes WHERE id_usuario = $1 ORDER BY id DESC",
       [usuarioId]
     );
 
-    // Construimos la URL pública de la imagen para cada registro
-    const base = req.protocol + "://" + req.get("host");
     const data = r.rows.map(row => ({
       id: row.id,
       id_prenda: row.id_prenda,
-      imagenUrl: `${base}/prendas/${row.id}/imagen`,
+      imagenUrl: `${base}/prendas/${row.id}/imagen`, // servimos el binario
     }));
 
     res.json(data);
   } catch (error) {
-    console.error("Error en GET /prendas:", error.stack);
+    console.error("❌ GET /prendas:", error.stack || error);
     res.status(500).json({ message: "Error interno del servidor" });
   }
 });
@@ -263,9 +269,8 @@ app.get("/prendas", async (req, res) => {
 app.get("/prendas/:id/imagen", async (req, res) => {
   try {
     const { id } = req.params;
-
     const r = await pool.query(
-      "SELECT imagen FROM imagenes WHERE id = $1",
+      "SELECT imagen, mime FROM imagenes WHERE id = $1",
       [id]
     );
 
@@ -273,17 +278,14 @@ app.get("/prendas/:id/imagen", async (req, res) => {
       return res.status(404).send("Imagen no encontrada");
     }
 
-  
-    res.set("Content-Type", "image/jpeg");
-    res.send(r.rows[0].imagen); // Buffer BYTEA
+    const mime = r.rows[0].mime || "application/octet-stream";
+    res.set("Content-Type", mime);
+    res.send(r.rows[0].imagen);
   } catch (error) {
-    console.error("Error en GET /prendas/:id/imagen:", error.stack);
+    console.error("Error en GET /prendas/:id/imagen:", error.stack || error);
     res.status(500).json({ message: "Error interno del servidor" });
   }
 });
-
-
-
 
 
 // -------------------------------------------------

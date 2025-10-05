@@ -1,7 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Image, StyleSheet, Alert, Platform } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system/legacy";
 import { Picker } from "@react-native-picker/picker";
+import Constants from "expo-constants";
+import { encode as btoa } from "base-64";
 
 const prendas = {
   "Camisetas": 1, "Camisas": 2, "Jeans": 3, "Pantalones": 4,
@@ -9,27 +12,93 @@ const prendas = {
   "Chaquetas": 9, "Shorts": 10, "Ropa deportiva": 11,
 };
 
+// === API KEY DE REMOVE.BG desde app.json (expo.extra) ===
+const EXTRA = Constants.expoConfig?.extra || Constants.manifest?.extra || {};
+const REMOVE_BG_API_KEY = EXTRA.REMOVE_BG_API_KEY || "";
+
+// AJUSTE DE URL DE ANDROID O IOS (para tu backend de guardar prendas)
+const API_BASE =
+  Platform.OS === "android"
+    ? "http://10.0.2.2:3000"        // emulador Android
+    : "http://192.168.78.207:3000"; // tu IP LAN para iOS / Android físico
+
 export default function AgregarPrendaScreen({ route, navigation }) { 
   const { usuarioId } = route.params;
 
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState(null);       // ruta local del PNG recortado
   const [selectedPrenda, setSelectedPrenda] = useState(null);
+  const [loading, setLoading] = useState(false);
 
+  // helper: arrayBuffer -> base64
+  const arrayBufferToBase64 = (buffer) => {
+    let binary = "";
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  };
 
 //TOMAR FOTO  
   const tomarFoto = async () => {
+    if (!REMOVE_BG_API_KEY) {
+      Alert.alert("Falta API Key", "Configura REMOVE_BG_API_KEY en app.json → expo.extra");
+      return;
+    }
+
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
       alert("Se requiere permiso para usar la cámara");
       return;
     }
+
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 0.7,
+      allowsEditing: false,   // <— importante: el recorte lo hará la API
+      quality: 1,
     });
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
+    if (result.canceled) return;
+
+    try {
+      setLoading(true);
+
+      // === Llamar a remove.bg y obtener PNG con transparencia ===
+      const form = new FormData();
+      form.append("image_file", {
+        uri: result.assets[0].uri,
+        name: "prenda.jpg",
+        type: "image/jpeg",
+      });
+      form.append("size", "auto");   // tamaño automático
+      form.append("format", "png");  // queremos PNG
+
+      const resp = await fetch("https://api.remove.bg/v1.0/removebg", {
+        method: "POST",
+        headers: { "X-Api-Key": REMOVE_BG_API_KEY },
+        body: form,
+      });
+
+      // remove.bg responde BINARIO (el PNG); leemos ArrayBuffer
+      const arrayBuf = await resp.arrayBuffer();
+      if (!resp.ok) {
+        const msg = resp.headers.get("x-error") || `HTTP ${resp.status}`;
+        throw new Error(`remove.bg: ${msg}`);
+      }
+
+      // Guardamos el PNG en la carpeta de la app
+      const base64Data = arrayBufferToBase64(arrayBuf);
+      const dir = FileSystem.documentDirectory + "prendas/";
+      await FileSystem.makeDirectoryAsync(dir, { intermediates: true }).catch(() => {});
+      const localPng = `${dir}prenda_${Date.now()}.png`;
+
+      await FileSystem.writeAsStringAsync(localPng, base64Data, { encoding: 'base64' });
+
+      // Vista previa con el PNG recortado
+      setImage(localPng);
+      Alert.alert("Listo ✅", "Prenda recortada automáticamente");
+    } catch (e) {
+      console.error("Error recortando prenda:", e);
+      Alert.alert("Error", e?.message || "No se pudo recortar la prenda");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -40,18 +109,28 @@ export default function AgregarPrendaScreen({ route, navigation }) {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("usuarioId", usuarioId);
-    formData.append("id_prenda", selectedPrenda);
-    formData.append("imagen", { uri: image, name: "prenda.jpg", type: "image/jpeg" });
-
     try {
-      const response = await fetch("http://192.168.78.207:3000/prendas", {
+      // MULTIPART con el PNG local (igual que hacías, pero ahora image/png)
+      const formData = new FormData();
+      formData.append("usuarioId", usuarioId);
+      formData.append("id_prenda", selectedPrenda);
+      formData.append("imagen", { uri: image, name: "prenda.png", type: "image/png" });
+
+      const response = await fetch(`${API_BASE}/prendas`, {
         method: "POST",
         body: formData
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Error al guardar la prenda");
+
+      const ct = response.headers.get("content-type") || "";
+      const raw = await response.text();
+      let data = null;
+      if (ct.includes("application/json")) {
+        try { data = JSON.parse(raw); } catch {}
+      }
+      if (!response.ok) {
+        const msg = (data && data.message) || raw.slice(0, 120);
+        throw new Error(msg || "Error al guardar la prenda");
+      }
 
       Alert.alert("Prenda guardada correctamente");
       setImage(null);
@@ -62,14 +141,13 @@ export default function AgregarPrendaScreen({ route, navigation }) {
     }
   };
 
-
  // VISTA 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Agregar Prenda</Text>
 
-      <TouchableOpacity style={styles.button} onPress={tomarFoto}>
-        <Text style={styles.buttonText}>Tomar Foto</Text>
+      <TouchableOpacity style={styles.button} onPress={tomarFoto} disabled={loading}>
+        <Text style={styles.buttonText}>{loading ? "Procesando..." : "Tomar Foto"}</Text>
       </TouchableOpacity>
 
       {image && <Image source={{ uri: image }} style={styles.preview} />}
@@ -86,7 +164,7 @@ export default function AgregarPrendaScreen({ route, navigation }) {
         ))}
       </Picker>
 
-      <TouchableOpacity style={styles.button} onPress={guardarPrenda}>
+      <TouchableOpacity style={styles.button} onPress={guardarPrenda} disabled={loading}>
         <Text style={styles.buttonText}>Guardar Prenda</Text>
       </TouchableOpacity>
 
@@ -154,6 +232,8 @@ const styles = StyleSheet.create({
     height: 250,
     marginVertical: 15,
     borderRadius: 10,
+    backgroundColor: "#fff",
+    resizeMode: "contain", // luce mejor con PNG recortado
   },
   label: {
     fontSize: 16,

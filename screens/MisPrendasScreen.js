@@ -7,8 +7,8 @@ const SafeAreaViewCompat = require("react-native").SafeAreaView || View;
 // AJUSTE DE URL DE ANDROID O IOS
 const API_BASE =
   Platform.OS === "android"
-    ? "http://192.168.78.207:3000"
-    : "http://192.168.78.207:3000";
+    ? "http://192.168.78.207:3000"  //android
+    : "http://192.168.78.207:3000"; //ios
 
 // CATEGORÍAS
 const categorias = {
@@ -162,14 +162,16 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
   },
-
+  
   img: {
     width: "100%",
     height: 200,
     borderRadius: 12,
     marginBottom: 10,
-    backgroundColor: "#eee",
+    backgroundColor: "transparent", // en vez de #eee
+    resizeMode: "contain",          // respeta la silueta recortada
   },
+
   row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
 
   caption: { fontSize: 16, fontWeight: "600", color: colors.text },
