@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator, ScrollView } from "react-native";
 import Constants from "expo-constants";
+import { MaterialIcons } from "@expo/vector-icons";
 
 // CATEGORÍAS 
 const categorias = {
@@ -16,7 +17,7 @@ const nombrePorId = Object.fromEntries(
 
 const API_BASE = Constants.expoConfig.extra.API_URL;
 
-export default function OutfitScreen({ route }) {
+export default function OutfitScreen({ route, navigation }) {
   const { usuarioId } = route.params || {};
   const [prendas, setPrendas] = useState([]);
   const [outfit, setOutfit] = useState([]);
@@ -85,8 +86,6 @@ export default function OutfitScreen({ route }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Outfit Aleatorio</Text>
-
       <TouchableOpacity style={styles.button} onPress={generarOutfit}>
         <Text style={styles.buttonText}>Generar Outfit</Text>
       </TouchableOpacity>
@@ -108,6 +107,47 @@ export default function OutfitScreen({ route }) {
       ) : (
         <Text style={styles.muted}>Toca "Generar Outfit" para ver combinaciones</Text>
       )}
+      <View style={styles.bottomMenu}>
+                <TouchableOpacity
+                  style={[styles.menuItem, styles.activeItem]}
+                  onPress={() => navigation.navigate("Inicio", { usuarioId })}
+                  activeOpacity={0.7}
+                >
+                  <MaterialIcons name="home" size={24} color={colors.textSecondary} />
+                  <Text style={styles.menuItemText}>Inicio</Text>
+                </TouchableOpacity>
+      
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => navigation.navigate("AgregarPrenda", { usuarioId })}
+                  activeOpacity={0.7}
+                >
+                  <MaterialIcons name="add" size={24} color={colors.textSecondary} />
+                  <Text style={styles.menuItemText}>Agregar</Text>
+                </TouchableOpacity>
+      
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => navigation.navigate("MisPrendas", { usuarioId })}
+                  activeOpacity={0.7}
+                >
+                  <MaterialIcons name="folder" size={24} color={colors.primary} />
+                  <Text style={[styles.menuItemText, styles.activeText]}>Estilo</Text>
+                </TouchableOpacity>
+      
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => navigation.navigate("ChatIA", { usuarioId })}
+                  activeOpacity={0.7}
+                >
+                  <MaterialIcons
+                    name="person-outline"
+                    size={24}
+                    color={colors.textSecondary}
+                  />
+                  <Text style={styles.menuItemText}>Chat</Text>
+                </TouchableOpacity>
+              </View>
     </View>
   );
 }
@@ -115,16 +155,33 @@ export default function OutfitScreen({ route }) {
 const colors = {
   primary: "#a17b4aff",
   background: "#ece2dcff",
-  card: "#fff",
-  text: "#333",
-  muted: "#666",
+  inputBackground: "#fff",
+  inputBorder: "#ccc",
+  textPrimary: "#333",
+  textSecondary: "#888",  
+  placeholder: "#666",
   buttonText: "#fff",
+  menuBackground: "#fff", 
+  shadow: "#000"
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: 16 },
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 22, fontWeight: "700", textAlign: "center", marginBottom: 20, color: colors.text },
+  container: { flex: 1, 
+    backgroundColor: colors.background, 
+    padding: 16 },
+
+  center: { 
+    flex: 1, 
+    justifyContent: "center", 
+    alignItems: "center" },
+
+  title: { 
+    fontSize: 22, 
+    fontWeight: "700", 
+    textAlign: "center",
+    marginBottom: 20, 
+    color: colors.text },
+
   button: {
     backgroundColor: colors.primary,
     paddingVertical: 12,
@@ -132,8 +189,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
   },
-  buttonText: { color: colors.buttonText, fontWeight: "700" },
-  outfitContainer: { alignItems: "center", gap: 20 },
+  buttonText: { 
+    color: colors.buttonText, 
+    fontWeight: "700" },
+
+  outfitContainer: { 
+    alignItems: "center", 
+    gap: 20 },
+
   card: {
     backgroundColor: colors.card,
     padding: 12,
@@ -141,7 +204,61 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
   },
-  img: { width: 200, height: 200, resizeMode: "contain", borderRadius: 10 },
-  caption: { marginTop: 8, fontSize: 16, fontWeight: "600", color: colors.text },
-  muted: { textAlign: "center", marginTop: 20, color: colors.muted },
+
+  img: { 
+    width: 200, 
+    height: 200, 
+    resizeMode: "contain", 
+    borderRadius: 10 },
+
+  caption: { 
+    marginTop: 8, 
+    fontSize: 16, 
+    fontWeight: "600",
+     color: colors.text },
+
+  muted: { 
+    textAlign: "center", 
+    marginTop: 20, 
+    color: colors.muted },
+
+  bottomMenu: {
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  right: 0,
+  flexDirection: "row",
+  justifyContent: "space-around",   
+  alignItems: "center",
+  backgroundColor: colors.menuBackground,
+  paddingVertical: 12,
+  borderTopWidth: 1,
+  borderTopColor: "#ddd",
+  shadowColor: colors.shadow,
+  shadowOffset: { width: 0, height: -2 },
+  shadowOpacity: 0.08,
+  shadowRadius: 3,
+  
+},
+
+menuItem: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+menuItemText: {
+  fontSize: 12,
+  marginTop: 4,
+  color: colors.textSecondary,
+},
+
+activeItem: {
+  // resaltado para el tab activo
+},
+
+activeText: {
+  color: colors.primary,
+  fontWeight: "600",
+},
 });
