@@ -1,132 +1,117 @@
-import React, { useEffect, useState, useCallback } from "react";
-import {View,Text,FlatList,Image,StyleSheet,ActivityIndicator,RefreshControl,TouchableOpacity,Platform,} from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator, ScrollView } from "react-native";
 import Constants from "expo-constants";
-// Alias seguro: usa SafeAreaView si está disponible; si no, cae a View (evita el crash)
-const SafeAreaViewCompat = require("react-native").SafeAreaView || View;
 
-// AJUSTE DE URL DE ANDROID O IOS
-const API_BASE = Constants.expoConfig.extra.API_URL;
-
-// CATEGORÍAS
+// CATEGORÍAS 
 const categorias = {
-  Camisetas: 1,Camisas: 2,Jeans: 3,Pantalones: 4,Faldas: 5,Vestidos: 6,Sudaderas: 7,Blazers: 8,Chaquetas: 9,Shorts: 10,"Ropa deportiva": 11,
+  "Camisetas": 1, "Camisas": 2, "Jeans": 3, "Pantalones": 4,
+  "Faldas": 5, "Vestidos": 6, "Sudaderas": 7, "Blazers": 8,
+  "Chaquetas": 9, "Shorts": 10, "Ropa deportiva": 11,
 };
 
+
 const nombrePorId = Object.fromEntries(
-  Object.entries(categorias).map(([nombre, id]) => [id, nombre])
+  Object.entries(categorias).map(([n, id]) => [id, n])
 );
 
-// PANTALLA PRINCIPAL DE MIS PRENDAS
-export default function MisPrendasScreen({ route }) {
-  const { usuarioId } = route.params || {};
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+const API_BASE = Constants.expoConfig.extra.API_URL;
 
-  // FUNCION PARA CARGAR PRENDAS
+export default function OutfitScreen({ route }) {
+  const { usuarioId } = route.params || {};
+  const [prendas, setPrendas] = useState([]);
+  const [outfit, setOutfit] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Cargar prendas guardadas
   const fetchPrendas = useCallback(async () => {
     try {
-      setErrorMsg("");
+      setLoading(true);
       const res = await fetch(`${API_BASE}/prendas?usuarioId=${usuarioId}`);
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || "No se pudo cargar prendas");
-      setItems(Array.isArray(data) ? data : []);
+      if (!res.ok) throw new Error(data?.message || "Error cargando prendas");
+
+      // aseguramos que siempre sea array
+      setPrendas(Array.isArray(data) ? data : []);
     } catch (e) {
-      setErrorMsg(e.message || "Error al cargar prendas");
-      setItems([]);
+      console.error("Error fetch prendas:", e);
+      setPrendas([]);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   }, [usuarioId]);
 
-  // CARGA INICIAL DE PRENDAS
   useEffect(() => {
     fetchPrendas();
   }, [fetchPrendas]);
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchPrendas();
+  // Generar outfit aleatorio (1 arriba + 1 abajo)
+  const generarOutfit = () => {
+    if (!Array.isArray(prendas) || prendas.length < 2) {
+      alert("Debes tener al menos 2 prendas guardadas");
+      return;
+    }
+
+    // tops (arriba)
+    const tops = prendas.filter(p =>
+      [categorias.Camisetas, categorias.Camisas, categorias.Vestidos, categorias.Sudaderas, categorias.Blazers, categorias.Chaquetas]
+        .includes(Number(p.id_prenda))
+    );
+
+    // bottoms (abajo)
+    const bottoms = prendas.filter(p =>
+      [categorias.Jeans, categorias.Pantalones, categorias.Faldas, categorias.Shorts, categorias["Ropa deportiva"]]
+        .includes(Number(p.id_prenda))
+    );
+
+    if (tops.length === 0 || bottoms.length === 0) {
+      alert("Necesitas al menos 1 prenda superior y 1 inferior");
+      return;
+    }
+
+    const randomTop = tops[Math.floor(Math.random() * tops.length)];
+    const randomBottom = bottoms[Math.floor(Math.random() * bottoms.length)];
+
+    setOutfit([randomTop, randomBottom]);
   };
 
   if (loading) {
     return (
-      <SafeAreaViewCompat style={styles.root}>
-        <View style={styles.center}>
-          <ActivityIndicator size="large" />
-          <Text style={styles.muted}>Cargando prendas…</Text>
-        </View>
-      </SafeAreaViewCompat>
-    );
-  }
-
-  // MENSAJES DE ERROR O DE LISTA VACIA
-  if (errorMsg) {
-    return (
-      <SafeAreaViewCompat style={styles.root}>
-        <View style={styles.center}>
-          <Text style={styles.error}>Error: {errorMsg}</Text>
-          <TouchableOpacity style={styles.button} onPress={fetchPrendas}>
-            <Text style={styles.buttonText}>Reintentar</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaViewCompat>
-    );
-  }
-
-  // VISTA DE LISTA DE PRENDAS
-  if (items.length === 0) {
-    return (
-      <SafeAreaViewCompat style={styles.root}>
-        <View style={styles.center}>
-          <Text style={styles.title}>Aún no tienes prendas guardadas</Text>
-          <Text style={styles.muted}>Agrega una desde “Agregar prenda”.</Text>
-          <TouchableOpacity
-            style={[styles.button, { marginTop: 16 }]}
-            onPress={fetchPrendas}
-          >
-            <Text style={styles.buttonText}>Actualizar</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaViewCompat>
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+        <Text>Cargando prendas…</Text>
+      </View>
     );
   }
 
   return (
-    <SafeAreaViewCompat style={styles.root}>
-      <FlatList
-        style={styles.list}
-        contentContainerStyle={styles.listInner}
-        data={items}
-        keyExtractor={(it) =>
-          String(it.id ?? it.prenda_id ?? it.id_prenda ?? Math.random())
-        }
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        renderItem={({ item }) => {
-          // Fallbacks por si el backend usa otros nombres de campos
-          const categoriaId = item.id_prenda ?? item.categoria_id;
-          const nombre = nombrePorId[categoriaId] || "Prenda";
-          const uri = item.imagenUrl ?? item.imagen_url ?? item.url;
+    <View style={styles.container}>
+      <Text style={styles.title}>Outfit Aleatorio</Text>
 
-          return (
-            <View style={styles.card}>
-              {!!uri && <Image source={{ uri }} style={styles.img} />}
-              <View style={styles.row}>
-                <Text style={styles.caption}>{nombre}</Text>
-              </View>
+      <TouchableOpacity style={styles.button} onPress={generarOutfit}>
+        <Text style={styles.buttonText}>Generar Outfit</Text>
+      </TouchableOpacity>
+
+      {outfit.length > 0 ? (
+        <ScrollView contentContainerStyle={styles.outfitContainer}>
+          {outfit.map((prenda, i) => (
+            <View key={i} style={styles.card}>
+              <Image
+                source={{ uri: prenda.imagenUrl }}
+                style={styles.img}
+              />
+              <Text style={styles.caption}>
+                {nombrePorId[Number(prenda.id_prenda)] || "Prenda"}
+              </Text>
             </View>
-          );
-        }}
-      />
-    </SafeAreaViewCompat>
+          ))}
+        </ScrollView>
+      ) : (
+        <Text style={styles.muted}>Toca "Generar Outfit" para ver combinaciones</Text>
+      )}
+    </View>
   );
 }
 
-// ESTILOS
 const colors = {
   primary: "#a17b4aff",
   background: "#ece2dcff",
@@ -137,50 +122,26 @@ const colors = {
 };
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
-  list: { flex: 1, backgroundColor: colors.background },
-  listInner: { padding: 16, gap: 12 },
-
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-    backgroundColor: colors.background,
-  },
-
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 12,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.12,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-  },
-  
-  img: {
-    width: "100%",
-    height: 200,
-    borderRadius: 12,
-    marginBottom: 10,
-    backgroundColor: "transparent", // en vez de #eee
-    resizeMode: "contain",          // respeta la silueta recortada
-  },
-
-  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-
-  caption: { fontSize: 16, fontWeight: "600", color: colors.text },
-  title: { fontSize: 18, fontWeight: "700", color: colors.text, textAlign: "center" },
-  muted: { color: colors.muted, marginTop: 6, textAlign: "center" },
-  error: { color: "#b00020", fontWeight: "600", textAlign: "center", marginBottom: 12 },
-
+  container: { flex: 1, backgroundColor: colors.background, padding: 16 },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  title: { fontSize: 22, fontWeight: "700", textAlign: "center", marginBottom: 20, color: colors.text },
   button: {
     backgroundColor: colors.primary,
     paddingVertical: 12,
-    paddingHorizontal: 18,
     borderRadius: 10,
+    alignItems: "center",
+    marginBottom: 20,
   },
   buttonText: { color: colors.buttonText, fontWeight: "700" },
+  outfitContainer: { alignItems: "center", gap: 20 },
+  card: {
+    backgroundColor: colors.card,
+    padding: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    width: "100%",
+  },
+  img: { width: 200, height: 200, resizeMode: "contain", borderRadius: 10 },
+  caption: { marginTop: 8, fontSize: 16, fontWeight: "600", color: colors.text },
+  muted: { textAlign: "center", marginTop: 20, color: colors.muted },
 });

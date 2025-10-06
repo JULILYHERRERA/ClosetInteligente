@@ -189,7 +189,7 @@ const arrayBufferToBase64 = (buffer) => {
     activeOpacity={0.7}
   >
     <MaterialIcons name="folder" size={24} color={colors.textSecondary} />
-    <Text style={styles.menuItemText}>Prendas</Text>
+    <Text style={styles.menuItemText}>Estilo</Text>
   </TouchableOpacity>
 
   <TouchableOpacity
