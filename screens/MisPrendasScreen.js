@@ -1,14 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {View,Text,FlatList,Image,StyleSheet,ActivityIndicator,RefreshControl,TouchableOpacity,Platform,} from "react-native";
-
+import Constants from "expo-constants";
 // Alias seguro: usa SafeAreaView si está disponible; si no, cae a View (evita el crash)
 const SafeAreaViewCompat = require("react-native").SafeAreaView || View;
 
 // AJUSTE DE URL DE ANDROID O IOS
-const API_BASE =
-  Platform.OS === "android"
-    ? "http://192.168.78.207:3000"  //android
-    : "http://192.168.78.207:3000"; //ios
+const API_BASE = Constants.expoConfig.extra.API_URL;
 
 // CATEGORÍAS
 const categorias = {

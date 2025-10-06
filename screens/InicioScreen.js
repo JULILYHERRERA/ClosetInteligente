@@ -14,14 +14,12 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { styles, colors } from "./InicioScreen.styles";
+import Constants from "expo-constants";
 
 const SafeAreaViewCompat = require("react-native").SafeAreaView || View;
 
 // AJUSTE DE URL
-const API_BASE =
-  Platform.OS === "android"
-    ? "http://192.168.78.207:3000"
-    : "http://192.168.78.207:3000";
+const API_BASE = Constants.expoConfig.extra.API_URL;
 
 // CATEGORÍAS
 const categorias = {

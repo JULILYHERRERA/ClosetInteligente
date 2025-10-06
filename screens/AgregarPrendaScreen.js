@@ -4,7 +4,8 @@ import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system/legacy";
 import { Picker } from "@react-native-picker/picker";
 import Constants from "expo-constants";
-import { encode as btoa } from "base-64";
+import { Buffer } from "buffer";
+
 
 const prendas = {
   "Camisetas": 1, "Camisas": 2, "Jeans": 3, "Pantalones": 4,
@@ -17,10 +18,7 @@ const EXTRA = Constants.expoConfig?.extra || Constants.manifest?.extra || {};
 const REMOVE_BG_API_KEY = EXTRA.REMOVE_BG_API_KEY || ""; 
 
 // AJUSTE DE URL DE ANDROID O IOS (para tu backend de guardar prendas)
-const API_BASE =
-  Platform.OS === "android"
-    ? "http://10.0.2.2:3000"        //  Android
-    : "http://192.168.78.207:3000"; // IOS
+const API_BASE = Constants.expoConfig.extra.API_URL; 
 
 export default function AgregarPrendaScreen({ route, navigation }) { 
   const { usuarioId } = route.params;
@@ -30,12 +28,10 @@ export default function AgregarPrendaScreen({ route, navigation }) {
   const [loading, setLoading] = useState(false);
 
   // helper: arrayBuffer -> base64 
-  const arrayBufferToBase64 = (buffer) => {
-    let binary = "";
-    const bytes = new Uint8Array(buffer);
-    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-    return btoa(binary);
-  };
+const arrayBufferToBase64 = (buffer) => {
+  return Buffer.from(buffer).toString("base64");
+};
+
 
 //TOMAR FOTO  
   const tomarFoto = async () => {

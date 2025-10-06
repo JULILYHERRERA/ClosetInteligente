@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Animated, Easing } from 'react-native';
+import Constants from "expo-constants";
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -28,6 +29,8 @@ export default function LoginScreen({ navigation }) {
     });
   };
 
+  const API_BASE = Constants.expoConfig.extra.API_URL;
+
   const handleLogin = async () => {
     if (!email || !password) {
       alert("Por favor ingresa tu correo y contraseña");
@@ -35,11 +38,11 @@ export default function LoginScreen({ navigation }) {
     }
 
     try {
-      const response = await fetch("http://192.168.78.207:3000/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, contrasena: password }),
-      });
+    const response = await fetch(`${API_BASE}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, contrasena: password }),
+    });
 
       const data = await response.json();
       console.log("Respuesta del servidor:", data);

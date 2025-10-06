@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Platform } from 'react-native';
 import DateTimePicker from '@react-native-datetimepicker/datetimepicker';
 import { useNavigation } from '@react-navigation/native'; // importacion de las navegaciones asi nos ahorramos el "export default function RegisterScreen({ navigation }) {
+import Constants from "expo-constants";
 
 export default function RegisterScreen() {
   const [nombre, setNombre] = useState('');
@@ -10,6 +11,7 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const API_BASE = Constants.expoConfig.extra.API_URL;
 
   const navigation = useNavigation();
 
@@ -20,7 +22,7 @@ export default function RegisterScreen() {
     }
 
     try {
-      const response = await fetch("http://192.168.78.207:3000/register", {
+      const response = await fetch(`${API_BASE}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
