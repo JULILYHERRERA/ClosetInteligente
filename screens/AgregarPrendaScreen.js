@@ -5,6 +5,7 @@ import * as FileSystem from "expo-file-system/legacy";
 import { Picker } from "@react-native-picker/picker";
 import Constants from "expo-constants";
 import { Buffer } from "buffer";
+import { MaterialIcons } from "@expo/vector-icons";
 
 
 const prendas = {
@@ -163,15 +164,44 @@ const arrayBufferToBase64 = (buffer) => {
         <Text style={styles.buttonText}>Guardar Prenda</Text>
       </TouchableOpacity>
 
-      {/* NUEVO: botón para ver las prendas  */}
-      <TouchableOpacity
-        style={[styles.button, styles.secondaryButton]}
-        onPress={() => navigation.navigate("MisPrendas", { usuarioId })}
-      >
-        <Text style={[styles.buttonText, styles.secondaryButtonText]}>
-          Ver mis prendas
-        </Text>
-      </TouchableOpacity>
+<View style={styles.bottomMenu}>
+  <TouchableOpacity
+    style={[styles.menuItem, styles.activeItem]}
+    onPress={() => navigation.navigate("Inicio", { usuarioId })}
+    activeOpacity={0.7}
+  >
+    <MaterialIcons name="home" size={24} color={colors.textSecondary} />
+    <Text style={styles.menuItemText}>Inicio</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.menuItem}
+    onPress={() => navigation.navigate("AgregarPrendaScreen", { usuarioId })}
+    activeOpacity={0.7}
+  >
+    <MaterialIcons name="add" size={24} color={colors.primary} />
+    <Text style={[styles.menuItemText, styles.activeText]}>Agregar</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.menuItem}
+    onPress={() => navigation.navigate("MisPrendas", { usuarioId })}
+    activeOpacity={0.7}
+  >
+    <MaterialIcons name="folder" size={24} color={colors.textSecondary} />
+    <Text style={styles.menuItemText}>Prendas</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.menuItem}
+    onPress={() => navigation.navigate("ChatIA", { usuarioId })}
+    activeOpacity={0.7}
+  >
+    <MaterialIcons name="person-outline" size={24} color={colors.textSecondary} />
+    <Text style={styles.menuItemText}>Chat</Text>
+  </TouchableOpacity>
+</View>
+
     </View>
   );
 }
@@ -183,8 +213,11 @@ const colors = {
   inputBackground: "#fff",
   inputBorder: "#ccc",
   textPrimary: "#333",
+  textSecondary: "#888",  // ← lo agregamos
   placeholder: "#666",
   buttonText: "#fff",
+  menuBackground: "#fff", // ← blanco para el menú
+  shadow: "#000"
 };
 
 const styles = StyleSheet.create({
@@ -243,4 +276,40 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 20,
   },
+  // Estilos para el bottom menu (sin cambios)
+  bottomMenu: {
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  right: 0,
+  flexDirection: "row",
+  backgroundColor: colors.menuBackground, // ← ahora sí blanco
+  paddingVertical: 10,
+  paddingHorizontal: 20,
+  borderTopWidth: 1,
+  borderTopColor: "#ddd",
+  shadowColor: colors.shadow,
+  shadowOffset: { width: 0, height: -2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 4,
+  elevation: 3,
+},
+    menuItem: {
+      flex: 1,
+      alignItems: "center",
+      paddingVertical: 8,
+    },
+    activeItem: {
+      // Ligeramente elevado para indicar activo
+    },
+    menuItemText: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginTop: 4,
+      fontWeight: "500",
+    },
+    activeText: {
+      color: colors.primary,
+      fontWeight: "600",
+    }
 });

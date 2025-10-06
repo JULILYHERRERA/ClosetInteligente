@@ -77,14 +77,7 @@ export const colors = {
     elevation: 4,
     width: "100%",
   },
-  avatar: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    marginBottom: 15,
-    borderWidth: 2,
-    borderColor: colors.primary,
-  },
+
   welcomeText: {
     fontSize: 20,
     fontWeight: "600",
@@ -221,5 +214,5 @@ export const colors = {
   activeText: {
     color: colors.primary,
     fontWeight: "600",
-  },
+  }
 });
