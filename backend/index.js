@@ -5,11 +5,16 @@ require("dotenv").config();
 const bcrypt = require("bcrypt");
 const multer = require("multer");
 
+// 👉 Gemini
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// CONEXION A NEON USANDO DATABASE_URL DE .ENV
+// CONEXION A NEON
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
@@ -28,7 +33,79 @@ app.get("/", async (req, res) => {
 });
 
 // -------------------------------------------------
-//  RUTA PARA EL REGISTRO
+// RUTA CHAT-IA (Gemini)
+app.post("/chat-ia", async (req, res) => {
+  try {
+    const { mensaje, usuarioId } = req.body;
+    if (!mensaje || !usuarioId) {
+      return res.status(400).json({ error: "Faltan datos (mensaje, usuarioId)" });
+    }
+
+    // 🔹 Obtener nombre del usuario
+    const userRes = await pool.query(
+      "SELECT nombre FROM usuarios WHERE id = $1",
+      [usuarioId]
+    );
+    const nombreUsuario = userRes.rows[0]?.nombre || "usuario";
+
+    // 🔹 Obtener últimas prendas del usuario
+    const base = req.protocol + "://" + req.get("host");
+    const r = await pool.query(
+      "SELECT id, id_prenda FROM imagenes WHERE id_usuario = $1 ORDER BY id DESC LIMIT 5",
+      [usuarioId]
+    );
+
+    const prendas = r.rows.map(row => ({
+      url: `${base}/prendas/${row.id}/imagen`,
+      tipo: String(row.id_prenda ?? "") // aseguramos string
+    }));
+
+    // 🔹 Prompt mejorado
+    let prompt = `El usuario se llama ${nombreUsuario} y dijo: "${mensaje}". 
+
+Últimas prendas registradas:
+${prendas.length
+  ? prendas.map(p => `- Tipo: ${p.tipo}, Imagen: ${p.url}`).join("\n")
+  : "No hay prendas registradas"}.
+
+Responde en un solo párrafo breve y claro, sin viñetas ni asteriscos. 
+Habla directamente a ${nombreUsuario} usando su nombre. 
+Indica cuáles de estas prendas usarías en la recomendación.`;
+
+    console.log("📝 Prompt IA:", prompt);
+
+    // 👉 llamada a Gemini
+    const result = await model.generateContent([prompt]);
+
+    const text =
+      result.response?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "⚠️ No se recibió texto de Gemini";
+
+    console.log("📩 Respuesta cruda IA:", result.response);
+    console.log("📩 Texto IA:", text);
+
+    // 🔹 Filtrar prendas mencionadas por la IA
+    const sugeridas = prendas.filter(p => {
+      if (!p.tipo) return false;
+      return text.toLowerCase().includes(p.tipo.toLowerCase());
+    });
+
+    // 🔹 Respuesta al frontend
+    res.json({
+      respuesta: text,
+      imagenes: sugeridas
+    });
+
+  } catch (error) {
+    console.error("❌ Error en /chat-ia:", error.stack || error);
+    res.status(500).json({ error: "Error en la IA", detalle: error.message });
+  }
+});
+
+
+
+// -------------------------------------------------
+// RUTA DE REGISTRO
 app.post("/register", async (req, res) => {
   try {
     const { nombre, apellido, fecha_nacimiento, email, contrasena } = req.body;
@@ -59,13 +136,11 @@ app.post("/register", async (req, res) => {
       });
     }
 
-    //  Verificar si el email ya existe
     const existe = await pool.query("SELECT 1 FROM usuarios WHERE email = $1", [email]);
     if (existe.rows.length > 0) {
       return res.status(400).json({ message: "El email ya está registrado ❌" });
     }
 
-    // Hashear la contraseña
     const hashedPassword = await bcrypt.hash(contrasena, 10);
 
     const result = await pool.query(
@@ -77,7 +152,6 @@ app.post("/register", async (req, res) => {
       message: "Usuario registrado con éxito ✅",
       userId: result.rows[0].id,
     });
-
   } catch (error) {
     console.error("Error en /register:", error.stack);
     return res.status(500).json({ message: "Error interno del servidor ❌" });
@@ -85,38 +159,27 @@ app.post("/register", async (req, res) => {
 });
 
 // -------------------------------------------------
-
-
-// RUTA DEL LOGIN
+// RUTA LOGIN
 app.post("/login", async (req, res) => {
   try {
     const { email, contrasena } = req.body;
-
     if (!email || !contrasena) {
       return res.status(400).json({ message: "Email y contraseña son obligatorios" });
     }
 
-    // 1. Buscar usuario por email
     const result = await pool.query("SELECT * FROM usuarios WHERE email = $1", [email]);
-
     if (result.rows.length === 0) {
       return res.status(400).json({ message: "El email no está registrado" });
     }
 
     const usuario = result.rows[0];
-
-    // 2. Comparar la contraseña ingresada con la hash en BD
     const esValida = await bcrypt.compare(contrasena, usuario.contrasena);
-
     if (!esValida) {
       return res.status(400).json({ message: "Contraseña incorrecta" });
     }
 
-    // 3. Eliminar contraseña del objeto antes de devolver
     delete usuario.contrasena;
-
     return res.json({ message: "Inicio de sesión exitoso ✅", usuario });
-
   } catch (error) {
     console.error("Error en /login:", error.stack);
     return res.status(500).json({ message: "Error interno del servidor ❌" });
@@ -124,15 +187,13 @@ app.post("/login", async (req, res) => {
 });
 
 // -------------------------------------------------
-
-
-//  RUTA PARA PREFERENCIAS 
+// RUTA PREFERENCIAS
 app.post("/preferencias", async (req, res) => {
   console.log("Body recibido:", req.body); 
   const client = await pool.connect();
   try {
     const { userId, colores, estilos, ocasiones, prendas } = req.body;
-    const usuario_id = userId; // asignar para mantener el resto del código igual
+    const usuario_id = userId;
     if (!usuario_id) {
       return res.status(400).json({ message: "Falta el ID de usuario" });
     }
@@ -144,7 +205,6 @@ app.post("/preferencias", async (req, res) => {
 
     await client.query("BEGIN");
 
-    // Guardar colores
     if (colores?.length) {
       for (const id of colores) {
         await client.query(
@@ -154,7 +214,6 @@ app.post("/preferencias", async (req, res) => {
       }
     }
 
-    // Guardar estilos
     if (estilos?.length) {
       for (const id of estilos) {
         await client.query(
@@ -164,7 +223,6 @@ app.post("/preferencias", async (req, res) => {
       }
     }
 
-    // Guardar ocasiones
     if (ocasiones?.length) {
       for (const id of ocasiones) {
         await client.query(
@@ -174,7 +232,6 @@ app.post("/preferencias", async (req, res) => {
       }
     }
 
-    // Guardar prendas
     if (prendas?.length) {
       for (const id of prendas) {
         await client.query(
@@ -195,26 +252,15 @@ app.post("/preferencias", async (req, res) => {
   }
 });
 
-
-// Configuración multer (sube imagen a memoria como buffer)
+// -------------------------------------------------
+// MULTER
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// -------------------------------------------------
-
-//RUTA PARA AGREGAR PRENDA (recibe multipart con campo "imagen")
+// RUTA PRENDAS
 app.post("/prendas", upload.single("imagen"), async (req, res) => {
   try {
     const { usuarioId, id_prenda } = req.body;
-
-    console.log(" /prendas ->", {
-      usuarioId, id_prenda,
-      hasFile: !!req.file,
-      mimetype: req.file?.mimetype,
-      name: req.file?.originalname,
-      size: req.file?.buffer?.length
-    });
-
     if (!usuarioId || !id_prenda) {
       return res.status(400).json({ message: "Faltan usuarioId o id_prenda" });
     }
@@ -222,7 +268,6 @@ app.post("/prendas", upload.single("imagen"), async (req, res) => {
       return res.status(400).json({ message: "Debes subir una imagen (campo 'imagen')" });
     }
 
-    // Inserta SOLO columnas existentes: id_usuario, id_prenda, imagen, mime
     await pool.query(
       "INSERT INTO imagenes (id_usuario, id_prenda, imagen, mime) VALUES ($1, $2, $3, $4)",
       [usuarioId, id_prenda, req.file.buffer, req.file.mimetype || "image/png"]
@@ -235,9 +280,7 @@ app.post("/prendas", upload.single("imagen"), async (req, res) => {
   }
 });
 
-
-// -------------------------------------------------
-// LISTAR PRENDAS DE UN USUARIO
+// LISTAR PRENDAS
 app.get("/prendas", async (req, res) => {
   try {
     const { usuarioId } = req.query;
@@ -254,7 +297,7 @@ app.get("/prendas", async (req, res) => {
     const data = r.rows.map(row => ({
       id: row.id,
       id_prenda: row.id_prenda,
-      imagenUrl: `${base}/prendas/${row.id}/imagen`, // servimos el binario
+      imagenUrl: `${base}/prendas/${row.id}/imagen`,
     }));
 
     res.json(data);
@@ -264,16 +307,11 @@ app.get("/prendas", async (req, res) => {
   }
 });
 
-
-// -------------------------------------------------
-// SERVIR LA IMAGEN (BINARIO) POR ID
+// SERVIR IMAGEN
 app.get("/prendas/:id/imagen", async (req, res) => {
   try {
     const { id } = req.params;
-    const r = await pool.query(
-      "SELECT imagen, mime FROM imagenes WHERE id = $1",
-      [id]
-    );
+    const r = await pool.query("SELECT imagen, mime FROM imagenes WHERE id = $1", [id]);
 
     if (r.rows.length === 0) {
       return res.status(404).send("Imagen no encontrada");
@@ -288,14 +326,9 @@ app.get("/prendas/:id/imagen", async (req, res) => {
   }
 });
 
-
 // -------------------------------------------------
-// LEVANTAR EL SERVIDOR 
+// SERVER
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
-
-
-
-
