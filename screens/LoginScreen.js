@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Animated, Easing } from 'react-native';
 import Constants from "expo-constants";
+import { StatusBar, Platform } from 'react-native';
+
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -77,7 +79,7 @@ export default function LoginScreen({ navigation }) {
         <View style={styles.logoPlaceholder}>
           <Text style={styles.logoText}>C</Text>
         </View>
-        <Text style={styles.title}>Bienvenido a tu Closet</Text>
+        <Text style={styles.title}>Bienvenido a tu LookMate</Text>
         <Text style={styles.subtitle}>Inicia sesión para explorar</Text>
       </View>
 
@@ -119,26 +121,27 @@ export default function LoginScreen({ navigation }) {
 
 // TODA LA PARTE DE ESTILOS
 const colors = {
-  primary: '#a17b4a',
-  background: '#f5f0eb',
-  inputBackground: '#ffffff',
-  inputBorder: '#d9c2a7',
-  textPrimary: '#4a4a4a',
-  placeholder: '#b8a898',
+  primary: '#7F6DF2',
+  background: '#ebe2f3ff',
+  inputBackground: '#fcfcfcff',
+  inputBorder: '#9688F2',
+  textPrimary: '#9688F2',
+  placeholder: '#9688F2',
   buttonText: '#ffffff',
-  secondary: '#d4a574',
+  secondary: '#9688F2',
   shadow: '#00000020',
-  success: '#2ecc71',
-  successDark: '#27ae60',
+  success: '#BFF207',
+  successDark: '#080808ff',
 };
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: colors.background, 
-    padding: 30, 
-    justifyContent: 'center' 
-  },
+container: { 
+  flex: 1, 
+  backgroundColor: colors.background, 
+  paddingHorizontal: 30,
+  paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0, 
+  justifyContent: 'center',
+},
 
   header: {
     alignItems: 'center',

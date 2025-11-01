@@ -33,34 +33,50 @@ export default function App() {
         <Stack.Screen 
           name="Register" 
           component={RegisterScreen} 
+          options={{ headerShown: false }} 
+
         />
         <Stack.Screen 
           name="Preferencias" 
           component={PreferenciasScreen} 
+          options={{ headerShown: false }} 
+
         />        
         <Stack.Screen 
           name="Login" 
-          component={LoginScreen} 
+          component={LoginScreen}
+          options={{ headerShown: false }} 
+ 
         />
         <Stack.Screen 
           name="Inicio" 
           component={InicioScreen}
+          options={{ headerShown: false }} 
+
         />
         <Stack.Screen 
           name="AgregarPrenda" 
           component={AgregarPrendaScreen}
+          options={{ headerShown: false }} 
+
         />
         <Stack.Screen 
         name="MisPrendas" 
         component={MisPrendasScreen} 
+        options={{ headerShown: false }} 
+
         />
         <Stack.Screen 
         name="ChatIA" 
         component={ChatIAScreen} 
+        options={{ headerShown: false }} 
+
         />
         <Stack.Screen 
         name="DetallePrenda" 
-        component={DetallePrendaScreen} 
+        component={DetallePrendaScreen}
+        options={{ headerShown: false }} 
+ 
         />
         
       </Stack.Navigator>

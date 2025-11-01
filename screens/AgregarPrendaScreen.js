@@ -179,7 +179,7 @@ const arrayBufferToBase64 = (buffer) => {
     onPress={() => navigation.navigate("AgregarPrendaScreen", { usuarioId })}
     activeOpacity={0.7}
   >
-    <MaterialIcons name="add" size={24} color={colors.primary} />
+    <MaterialIcons name="add" size={24} color={colors.textPrimary} />
     <Text style={[styles.menuItemText, styles.activeText]}>Agregar</Text>
   </TouchableOpacity>
 
@@ -208,17 +208,18 @@ const arrayBufferToBase64 = (buffer) => {
 
 //ESTILOS 
 const colors = {
-  primary: "#a17b4aff",
-  background: "#ece2dcff",
+  primary: "#7F6DF2",
+  background: "#ece7f7ff",
   inputBackground: "#fff",
   inputBorder: "#ccc",
-  textPrimary: "#333",
+  textPrimary: "#014034",
   textSecondary: "#888",  // ← lo agregamos
   placeholder: "#666",
   buttonText: "#fff",
   menuBackground: "#fff", // ← blanco para el menú
   shadow: "#000"
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -235,14 +236,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    backgroundColor: colors.primary,
+    backgroundColor: "#BFF207",
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
     marginVertical: 10,
   },
   buttonText: {
-    color: colors.buttonText,
+    color: "#014034",
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -304,12 +305,12 @@ const styles = StyleSheet.create({
     },
     menuItemText: {
       fontSize: 12,
-      color: colors.textSecondary,
+      color: colors.textPrimary,
       marginTop: 4,
       fontWeight: "500",
     },
     activeText: {
-      color: colors.primary,
+      color: colors.textPrimary,
       fontWeight: "600",
     }
 });

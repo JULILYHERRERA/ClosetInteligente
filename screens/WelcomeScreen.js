@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, ImageBackground, TouchableOpacity } from 'react
 export default function WelcomeScreen({ navigation }) {
   return (
     <ImageBackground 
-      source={{ uri: "https://images.unsplash.com/photo-1604882767135-b41fac508fff?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}} 
+      source={{ uri: "https://images.unsplash.com/photo-1608739871816-346c9db7e122?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=387"}} 
       style={styles.background}
     >
       <View style={styles.overlay}>
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   button: {
-    backgroundColor: "#a17b4aff",
+    backgroundColor: "#7F6DF2",
     paddingVertical: 12,
     borderRadius: 25,
     width: 200,

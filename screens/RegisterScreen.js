@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Platform } from 'react-native';
 import DateTimePicker from '@react-native-datetimepicker/datetimepicker';
-import { useNavigation } from '@react-navigation/native'; // importacion de las navegaciones asi nos ahorramos el "export default function RegisterScreen({ navigation }) {
+import { useNavigation } from '@react-navigation/native';
 import Constants from "expo-constants";
 
 export default function RegisterScreen() {
@@ -50,16 +50,14 @@ export default function RegisterScreen() {
   };
 
   const onChangeDate = (event, selectedDate) => {
-    setShowDatePicker(Platform.OS === 'ios');
+    setShowDatePicker(false);
     if (selectedDate) {
       setFechaNacimiento(selectedDate.toISOString().split('T')[0]);
     }
   };
 
-  // TODO LO VISUAL
   return (
     <View style={styles.container}>
-      {/* Header animado similar al login para cohesión */}
       <View style={styles.header}>
         <View style={styles.logoPlaceholder}>
           <Text style={styles.logoText}>C</Text>
@@ -68,9 +66,7 @@ export default function RegisterScreen() {
         <Text style={styles.subtitle}>Únete a tu Closet Virtual</Text>
       </View>
 
-      {/* Formulario en card con inputs mejorados */}
       <View style={styles.formCard}>
-        {/* Input Nombre */}
         <TextInput
           placeholder="Nombre"
           placeholderTextColor={colors.placeholder}
@@ -80,7 +76,6 @@ export default function RegisterScreen() {
           style={styles.input}
         />
 
-        {/* Input Apellido */}
         <TextInput
           placeholder="Apellido"
           placeholderTextColor={colors.placeholder}
@@ -90,7 +85,7 @@ export default function RegisterScreen() {
           style={styles.input}
         />
 
-        {/* Selector de Fecha de Nacimiento */}
+        {/* Campo de fecha */}
         <TouchableOpacity
           style={styles.dateInput}
           onPress={() => setShowDatePicker(true)}
@@ -104,19 +99,22 @@ export default function RegisterScreen() {
           >
             {fechaNacimiento ? fechaNacimiento : 'Selecciona tu fecha de nacimiento'}
           </Text>
+          <Text style={styles.dateIcon}>📅</Text>
         </TouchableOpacity>
 
+        {/* Render seguro del DatePicker */}
         {showDatePicker && (
-          <DateTimePicker
-            value={fechaNacimiento ? new Date(fechaNacimiento) : new Date()}
-            mode="date"
-            display={Platform.OS === "ios" ? "spinner" : "default"}
-            onChange={onChangeDate}
-            maximumDate={new Date()}
-          />
+          <View style={{ backgroundColor: '#fff', borderRadius: 10 }}>
+            <DateTimePicker
+              value={fechaNacimiento ? new Date(fechaNacimiento) : new Date()}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={onChangeDate}
+              maximumDate={new Date()}
+            />
+          </View>
         )}
 
-        {/* Input Email */}
         <TextInput
           placeholder="Email"
           placeholderTextColor={colors.placeholder}
@@ -127,7 +125,6 @@ export default function RegisterScreen() {
           style={styles.input}
         />
 
-        {/* Input Contraseña */}
         <TextInput
           placeholder="Contraseña"
           placeholderTextColor={colors.placeholder}
@@ -142,7 +139,6 @@ export default function RegisterScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Enlace a login */}
       <TouchableOpacity
         style={styles.loginLink}
         onPress={() => navigation.navigate('Login')}
@@ -154,16 +150,17 @@ export default function RegisterScreen() {
 }
 
 const colors = {
-  primary: '#a17b4a',
-  background: '#f5f0eb',
-  inputBackground: '#ffffff',
-  inputBorder: '#d9c2a7',
-  textPrimary: '#4a4a4a',
-  placeholder: '#b8a898',
+  primary: '#7F6DF2',
+  background: '#ebe2f3ff',
+  inputBackground: '#fcfcfcff',
+  inputBorder: '#9688F2',
+  textPrimary: '#9688F2',
+  placeholder: '#9688F2',
   buttonText: '#ffffff',
-  secondary: '#d4a574',
+  secondary: '#9688F2',
   shadow: '#00000020',
-  accent: '#8b7355',
+  success: '#BFF207',
+  successDark: '#080808ff',
 };
 
 const styles = StyleSheet.create({
@@ -191,13 +188,12 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
     borderWidth: 2,
-    borderColor: colors.accent,
+    borderColor: colors.secondary,
   },
   logoText: {
     fontSize: 48,
     color: colors.buttonText,
     fontWeight: '900',
-    fontFamily: 'System',
     textShadowColor: 'rgba(0,0,0,0.2)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
@@ -238,11 +234,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 20,
     color: colors.textPrimary,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
   },
   dateInput: {
     backgroundColor: colors.inputBackground,
@@ -253,17 +244,16 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginBottom: 20,
     justifyContent: 'center',
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    alignItems: 'center',
+    flexDirection: 'row',
   },
   dateText: {
     fontSize: 16,
     flex: 1,
   },
-  inputIcon: {
+  dateIcon: {
+    fontSize: 18,
+    color: colors.placeholder,
     marginLeft: 10,
   },
   button: {
@@ -271,13 +261,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
-    borderWidth: 1,
-    borderColor: colors.secondary,
   },
   buttonText: {
     color: colors.buttonText,
@@ -285,9 +268,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.5,
   },
-  loginLink: {
-    alignItems: 'center',
-  },
+  loginLink: { alignItems: 'center' },
   loginText: {
     color: colors.secondary,
     fontSize: 14,

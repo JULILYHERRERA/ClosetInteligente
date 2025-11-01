@@ -1,15 +1,16 @@
 import { StyleSheet } from "react-native";
 export const colors = {
-  primary: "#a17b4a",
-  primaryDark: "#8a5f3a",
-  background: "#ece2dc",
+  primary: "#014034",
+  primaryDark: "#e0ddf3ff",
+  background: "#ece7f7ff",
   cardBackground: "#ffffff",
   textPrimary: "#333333",
   textSecondary: "#666666",
   buttonText: "#ffffff",
-  accent: "#f4e4d9",
+  accent: "#BFF207",
   shadow: "#00000020",
 };
+
  export const styles = StyleSheet.create({
   safeArea: {
     flex: 1,

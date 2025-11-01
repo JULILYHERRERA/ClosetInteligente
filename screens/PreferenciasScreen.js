@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import Constants from "expo-constants"; // ✅ Import necesario para usar API_BASE
 
 // OPCIONES
 const opciones = {
@@ -20,22 +21,19 @@ const opciones = {
   },
 };
 
-
 export default function HomeScreen({ route, navigation }) {
-  const { userId } = route.params || {}; 
-
-//CATEGORIAS  
+  const { userId } = route.params || {};
   const [preferencias, setPreferencias] = useState({
     colores: [],
     estilos: [],
-    ocasiones: [],  
+    ocasiones: [],
     prendas: [],
   });
+  const [paso, setPaso] = useState(0);
+  const categorias = Object.keys(opciones);
+  const API_BASE = Constants.expoConfig.extra.API_URL; // ✅ Base URL del backend
 
-  const [paso, setPaso] = useState(0); // indice del paso actual
-  const categorias = Object.keys(opciones); //  ["colores", "estilos", "ocasiones", "prendas"]
-
-//SELECIÓN Y DESELECCIÓN
+  // SELECCIÓN Y DESELECCIÓN
   const toggleSeleccion = (categoria, opcion) => {
     setPreferencias((prev) => {
       const seleccion = prev[categoria].includes(opcion)
@@ -63,7 +61,7 @@ export default function HomeScreen({ route, navigation }) {
     </View>
   );
 
-
+  // ✅ GUARDAR PREFERENCIAS (con fetch organizado)
   const guardarPreferencias = async () => {
     try {
       const payload = {
@@ -74,19 +72,22 @@ export default function HomeScreen({ route, navigation }) {
         prendas: preferencias.prendas.map((p) => opciones.prendas[p]),
       };
 
-      const response = await fetch("http:192.168.78.207:3000/preferencias", {
+      const response = await fetch(`${API_BASE}/preferencias`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
       if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
 
       const data = await response.json();
       console.log("Preferencias guardadas:", data);
 
+      Alert.alert("✅ Preferencias guardadas correctamente");
       navigation.replace("Login");
     } catch (error) {
-      Alert.alert("⚠️ Ocurrió un error: " + error.message);
+      Alert.alert("⚠️ Error al guardar las preferencias", error.message);
+      console.error("Error al guardar preferencias:", error);
     }
   };
 
@@ -125,10 +126,10 @@ export default function HomeScreen({ route, navigation }) {
   );
 }
 
-//ESTILOS
+// ESTILOS
 const colors = {
-  primary: "#a17b4aff",
-  background: "#ece2dcff",
+  primary: "#7F6DF2",
+  background: "#ece7f7ff",
   inputBackground: "#fff",
   inputBorder: "#ccc",
   textPrimary: "#333",
@@ -169,8 +170,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.inputBackground,
   },
   opcionSeleccionada: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    backgroundColor: "#BFF207",
+    borderColor: "#BFF207",
   },
   texto: {
     fontSize: 16,
@@ -191,7 +192,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   botonAnterior: {
-    backgroundColor: "#888", // gris para diferenciarlo
+    backgroundColor: "#888",
   },
   botonTexto: {
     color: colors.buttonText,
