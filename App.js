@@ -16,6 +16,7 @@ import AgregarPrendaScreen from './screens/AgregarPrendaScreen';
 import MisPrendasScreen from "./screens/MisPrendasScreen";
 import ChatIAScreen from "./screens/ChatIAScreen"
 import DetallePrendaScreen from "./screens/DetallePrendaScreen";
+import LogoutScreen from './screens/LogoutScreeen';
 
 
 // CREAR EL STACK
@@ -78,6 +79,15 @@ export default function App() {
         options={{ headerShown: false }} 
  
         />
+
+        
+        <Stack.Screen 
+        name="Logout" 
+        component={LogoutScreen}
+        options={{ headerShown: false }} 
+ 
+        />
+        
         
       </Stack.Navigator>
     </NavigationContainer>

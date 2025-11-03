@@ -239,7 +239,7 @@ export default function InicioScreen({ route, navigation }) {
         <View style={styles.bottomMenu}>
           <TouchableOpacity
             style={[styles.menuItem, styles.activeItem]}
-            onPress={() => navigation.navigate("InicioScreen", { usuarioId })}
+            onPress={() => navigation.navigate("Logout", { usuarioId })}
             activeOpacity={0.7}
           >
             <MaterialIcons name="home" size={24} color={colors.primary} />

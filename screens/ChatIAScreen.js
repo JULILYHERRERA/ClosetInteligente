@@ -1,8 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Image, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Image, KeyboardAvoidingView, Platform, Alert } from "react-native";
 import Constants from "expo-constants";
+import { useRoute } from "@react-navigation/native";
 
 export default function ChatIAScreen() {
+  const route = useRoute();
+  const { usuarioId } = route.params || {}; 
+
   const [messages, setMessages] = useState([
     { id: "1", text: "👋 Hola, soy tu asistente de moda. ¿Qué ocasión tienes en mente?", sender: "ia", type: "text" }
   ]);
@@ -13,6 +17,11 @@ export default function ChatIAScreen() {
   const handleSend = async () => {
     if (!input.trim()) return;
 
+    if (!usuarioId) {
+      Alert.alert("Falta usuario", "No se encontró el usuario logueado (usuarioId). Vuelve desde Inicio.");
+      return;
+    }
+
     const userMessage = { id: Date.now().toString(), text: input, sender: "user", type: "text" };
     setMessages((prev) => [...prev, userMessage]);
 
@@ -20,7 +29,7 @@ export default function ChatIAScreen() {
       const res = await fetch(`${API_BASE}/chat-ia`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mensaje: input, usuarioId: 16 })
+        body: JSON.stringify({ mensaje: input, usuarioId }) 
       });
 
       const data = await res.json();
