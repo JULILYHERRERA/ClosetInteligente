@@ -326,6 +326,28 @@ app.get("/prendas/:id/imagen", async (req, res) => {
   }
 });
 
+app.delete("/prendas/:id", async (req, res) => {
+  const { id } = req.params;
+  console.log("DELETE /prendas con id:", id); // <- Verifica que llega
+  try {
+    const result = await pool.query(
+      "DELETE FROM imagenes WHERE id = $1 RETURNING id",
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Prenda no encontrada" });
+    }
+
+    res.json({ message: "Prenda eliminada correctamente ✅" });
+  } catch (error) {
+    console.error("❌ Error en DELETE /prendas/:id:", error.stack || error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+});
+
+
+
 // -------------------------------------------------
 // SERVER
 const PORT = 3000;
