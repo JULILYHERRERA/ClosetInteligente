@@ -81,8 +81,7 @@ export default function OutfitScreen({ route, navigation }) {
     <View style={styles.container}>
       {outfit.length > 0 ? (
         <>
-          <ScrollView 
-            horizontal 
+          <ScrollView
             contentContainerStyle={[styles.outfitContainer, { paddingBottom: 10 }]} 
             showsHorizontalScrollIndicator={false}
           >
@@ -154,7 +153,7 @@ const colors = {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background, padding: 16 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  outfitContainer: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 16, paddingVertical: 20 },
+  outfitContainer: { flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, paddingVertical: 20 },
   card: {
     backgroundColor: "#fff",
     padding: 12,

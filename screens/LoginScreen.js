@@ -11,7 +11,6 @@ export default function LoginScreen({ navigation }) {
   // Toast de éxito (animado)
   const [successMsg, setSuccessMsg] = useState('');
   const toastY = useRef(new Animated.Value(-120)).current;
-
   const showSuccessToast = (msg = 'Inicio de sesión exitoso') => {
     setSuccessMsg(msg);
     Animated.timing(toastY, {

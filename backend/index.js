@@ -48,29 +48,48 @@ app.post("/chat-ia", async (req, res) => {
     );
     const nombreUsuario = userRes.rows[0]?.nombre || "usuario";
 
-    // 🔹 Obtener últimas prendas del usuario
+    // 🔹 Obtener todas las prendas del usuario con su tipo (JOIN con tabla prendas)
     const base = req.protocol + "://" + req.get("host");
     const r = await pool.query(
-      "SELECT id, id_prenda FROM imagenes WHERE id_usuario = $1 ORDER BY id DESC LIMIT 5",
+      `
+      SELECT i.id, p.nombre_prenda AS tipo_prenda
+      FROM imagenes i
+      JOIN prendas p ON i.id_prenda = p.id_prenda
+      WHERE i.id_usuario = $1
+      ORDER BY i.id DESC
+      `,
       [usuarioId]
     );
 
+    // 🔹 Mapeamos las prendas con nombre descriptivo
     const prendas = r.rows.map(row => ({
       url: `${base}/prendas/${row.id}/imagen`,
-      tipo: String(row.id_prenda ?? "") // aseguramos string
+      tipo: row.tipo_prenda || "Prenda sin nombre"
     }));
 
     // 🔹 Prompt mejorado
-    let prompt = `El usuario se llama ${nombreUsuario} y dijo: "${mensaje}". 
+    let prompt = `
+Eres un asistente virtual experto en moda y closet inteligente.
+El usuario se llama ${nombreUsuario} y dijo: "${mensaje}".
 
-Últimas prendas registradas:
+Estas son todas las prendas del closet de ${nombreUsuario}:
 ${prendas.length
-  ? prendas.map(p => `- Tipo: ${p.tipo}, Imagen: ${p.url}`).join("\n")
-  : "No hay prendas registradas"}.
+  ? prendas.map(p => `- ${p.tipo}: ${p.url}`).join("\n")
+  : "No hay prendas registradas."}
 
-Responde en un solo párrafo breve y claro, sin viñetas ni asteriscos. 
-Habla directamente a ${nombreUsuario} usando su nombre. 
-Indica cuáles de estas prendas usarías en la recomendación.`;
+Tu tarea:
+1. Si el mensaje está relacionado con ropa, moda o combinaciones de atuendos:
+   - Recomienda solo las prendas más adecuadas del closet.
+   - No repitas toda la lista, solo menciona las que usarías en tu recomendación.
+   - Escribe una respuesta natural, breve (2–3 oraciones), hablando directamente a ${nombreUsuario}.
+2. Si el mensaje **no tiene relación con ropa o el closet**:
+   - No hables de temas ajenos.
+   - Responde educadamente que solo puedes ayudar con temas de moda o prendas.
+   - Sugiere amablemente que ${nombreUsuario} te pida una recomendación de atuendo o combinación.
+
+No incluyas enlaces, URLs ni rutas de imágenes en tu respuesta. 
+No uses viñetas ni asteriscos. Solo texto plano.
+`;
 
     console.log("📝 Prompt IA:", prompt);
 
@@ -80,14 +99,22 @@ Indica cuáles de estas prendas usarías en la recomendación.`;
     const text =
       result.response?.candidates?.[0]?.content?.parts?.[0]?.text ||
       "⚠️ No se recibió texto de Gemini";
-
-    console.log("📩 Respuesta cruda IA:", result.response);
     console.log("📩 Texto IA:", text);
 
-    // 🔹 Filtrar prendas mencionadas por la IA
+    // 🔹 Diccionario de sinónimos
+    const sinonimos = {
+      camisa: ["camisa", "blusa", "camiseta"],
+      pantalon: ["pantalón", "jean", "vaquero"],
+      chaqueta: ["chaqueta", "abrigo", "buzo", "saco"],
+      vestido: ["vestido", "falda", "enterizo"],
+    };
+
+    // 🔹 Filtrar prendas sugeridas por texto de la IA
     const sugeridas = prendas.filter(p => {
-      if (!p.tipo) return false;
-      return text.toLowerCase().includes(p.tipo.toLowerCase());
+      const tipo = p.tipo?.toLowerCase();
+      if (!tipo) return false;
+      const posibles = sinonimos[tipo] || [tipo];
+      return posibles.some(palabra => text.toLowerCase().includes(palabra));
     });
 
     // 🔹 Respuesta al frontend
@@ -158,7 +185,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// -------------------------------------------------
+// ----------------------------------------------------
 // RUTA LOGIN
 app.post("/login", async (req, res) => {
   try {
